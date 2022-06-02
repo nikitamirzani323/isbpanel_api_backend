@@ -6,9 +6,9 @@ import (
 	"errors"
 	"log"
 
-	"bitbucket.org/isbtotogroup/isbpanel_backend/configs"
-	"bitbucket.org/isbtotogroup/isbpanel_backend/db"
-	"bitbucket.org/isbtotogroup/isbpanel_backend/helpers"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/configs"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/db"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/helpers"
 	"github.com/nleeper/goment"
 )
 

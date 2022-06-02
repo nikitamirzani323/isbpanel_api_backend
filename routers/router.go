@@ -1,8 +1,8 @@
 package routers
 
 import (
-	"bitbucket.org/isbtotogroup/isbpanel_backend/controllers"
-	"bitbucket.org/isbtotogroup/isbpanel_backend/middleware"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/controllers"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/logger"

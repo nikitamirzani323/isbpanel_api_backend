@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"bitbucket.org/isbtotogroup/isbpanel_backend/routers"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/routers"
 )
 
 func main() {

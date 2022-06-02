@@ -4,9 +4,9 @@ import (
 	"log"
 	"strconv"
 
-	"bitbucket.org/isbtotogroup/isbpanel_backend/entities"
-	"bitbucket.org/isbtotogroup/isbpanel_backend/helpers"
-	"bitbucket.org/isbtotogroup/isbpanel_backend/models"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/entities"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/helpers"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/models"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"

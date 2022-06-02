@@ -1,4 +1,4 @@
-module bitbucket.org/isbtotogroup/isbpanel_backend
+module bitbucket.org/isbtotogroup/isbpanel_api_backend
 
 go 1.17
 

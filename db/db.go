@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"bitbucket.org/isbtotogroup/isbpanel_backend/helpers"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/helpers"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )

@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"bitbucket.org/isbtotogroup/isbpanel_backend/entities"
-	"bitbucket.org/isbtotogroup/isbpanel_backend/helpers"
-	"bitbucket.org/isbtotogroup/isbpanel_backend/models"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/entities"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/helpers"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/models"
 	"github.com/buger/jsonparser"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"

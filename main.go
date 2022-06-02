@@ -6,11 +6,31 @@ import (
 	"os/signal"
 	"syscall"
 
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/db"
+	"bitbucket.org/isbtotogroup/isbpanel_api_backend/helpers"
 	"bitbucket.org/isbtotogroup/isbpanel_api_backend/routers"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		panic("Failed to load env file")
+	}
+
+	initRedis := helpers.RedisHealth()
+
+	if !initRedis {
+		panic("cannot load redis")
+	}
+
+	db.Init()
+
 	app := routers.Init()
+
+	if !initRedis {
+		panic("cannot load redis")
+	}
 	go func() {
 		port := os.Getenv("PORT")
 		if port == "" {

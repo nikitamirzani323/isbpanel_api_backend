@@ -1,13 +1,19 @@
-# MYSQL settings:
-# DB_USER="sperma"
-# DB_PASS="asdQWE123!@#"
-# DB_HOST="165.22.242.64"
-# DB_PORT="3306"
-# DB_NAME="db_keluaranmovie"
-# DB_DRIVER="mysql"
+PORT=5052
+# POSTGRES settings:
+DB_USER="admindb"
+DB_PASS="asd123QWE"
+DB_HOST="128.199.124.131"
+DB_PORT=5432
+DB_NAME="admindb"
+DB_SCHEMA="db_keluaranmovie"
+DB_DRIVER="postgres"
 
 # REDIS settings:
-# DB_REDIS_HOST="174.138.18.67:6379"
-# DB_REDIS_PASSWORD=""
-# DB_REDIS_NAME="1"
+DB_REDIS_HOST="128.199.124.131"
+DB_REDIS_PORT="6379"
+DB_REDIS_PASSWORD="asdQWE123!@#"
+DB_REDIS_NAME="7"
 
+# JWT settings:
+JWT_SECRET_KEY="secretbabaliong"
+JWT_SECRET_KEY_EXPIRE_MINUTES_COUNT=1440

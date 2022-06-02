@@ -28,11 +28,6 @@ func Init() *fiber.App {
 	app.Use(logger.New())
 	app.Use(recover.New())
 	app.Use(compress.New())
-	app.Static("/", "frontend/public", fiber.Static{
-		Compress:  true,
-		ByteRange: true,
-		Browse:    true,
-	})
 	app.Get("/ipaddress", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"status":      fiber.StatusOK,

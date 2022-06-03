@@ -18,14 +18,14 @@ func Fetch_adminHome() (helpers.ResponseAdmin, error) {
 	var obj entities.Model_admin
 	var arraobj []entities.Model_admin
 	var res helpers.ResponseAdmin
-	msg := "Error"
+	msg := "Data Not Found"
 	con := db.CreateCon()
 	ctx := context.Background()
 	start := time.Now()
 
 	sql_select := `SELECT 
 			username , name, idadmin,
-			statuslogin, lastlogin, joindate, 
+			statuslogin, to_char(COALESCE(lastlogin,now()), 'YYYY-MM-DD HH24:MI:SS'), joindate, 
 			ipaddress, timezone  
 			FROM ` + configs.DB_tbl_admin + ` 
 			ORDER BY lastlogin DESC 
@@ -102,7 +102,7 @@ func Fetch_adminDetail(username string) (helpers.ResponseAdmin, error) {
 	var obj entities.Model_adminsave
 	var arraobj []entities.Model_adminsave
 	var res helpers.ResponseAdmin
-	msg := "Error"
+	msg := "Data Not Found"
 	con := db.CreateCon()
 	ctx := context.Background()
 	start := time.Now()
@@ -110,7 +110,8 @@ func Fetch_adminDetail(username string) (helpers.ResponseAdmin, error) {
 
 	sql_detail := `SELECT 
 		idadmin, name, statuslogin  
-		createadmin, createdateadmin, updateadmin, updatedateadmin  
+		createadmin, to_char(COALESCE(createdateadmin,now()), 'YYYY-MM-DD HH24:MI:SS'), 
+		updateadmin, to_char(COALESCE(updatedateadmin,now()), 'YYYY-MM-DD HH24:MI:SS')  
 		FROM ` + configs.DB_tbl_admin + `
 		WHERE username = $1 
 	`
@@ -192,7 +193,7 @@ func Save_adminHome(admin, username, password, nama, rule, status, sData string)
 			flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_admin, "INSERT",
 				username, hashpass,
 				rule, nama, status,
-				tglnow.Format("YYYY-MM-DD HH:mm:ss"),
+				tglnow.Format("YYYY-MM-DD"),
 				admin,
 				tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 

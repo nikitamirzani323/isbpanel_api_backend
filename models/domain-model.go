@@ -25,7 +25,8 @@ func Fetch_domainHome() (helpers.Response, error) {
 
 	sql_select := `SELECT 
 			iddomain , nmdomain, statusdomain,  
-			createdomain, COALESCE(createdatedomain,now()), updatedomain, COALESCE(updatedatedomain,now())
+			createdomain, to_char(COALESCE(createdatedomain,now()), 'YYYY-MM-DD HH24:MI:SS'), 
+			updatedomain, to_char(COALESCE(updatedatedomain,now()), 'YYYY-MM-DD HH24:MI:SS') 
 			FROM ` + configs.DB_tbl_mst_domain + `  
 			ORDER BY iddomain DESC   
 	`

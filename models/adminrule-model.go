@@ -16,7 +16,7 @@ func Fetch_adminruleHome() (helpers.Response, error) {
 	var obj entities.Model_adminruleall
 	var arraobj []entities.Model_adminruleall
 	var res helpers.Response
-	msg := "Error"
+	msg := "Data Not Found"
 	con := db.CreateCon()
 	ctx := context.Background()
 	start := time.Now()

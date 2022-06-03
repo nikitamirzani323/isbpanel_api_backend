@@ -28,7 +28,7 @@ func Fetch_pasaranHome() (helpers.Response, error) {
 	sql_select := `SELECT 
 			idpasarantogel , nmpasarantogel, 
 			urlpasaran , pasarandiundi, jamjadwal::text, displaypasaran, statuspasaran, 
-			createpasarantogel, COALESCE(createdatepasarantogel,now()), updatepasarantogel, COALESCE(updatedatepasarantogel,now())  
+			createpasarantogel,  COALESCE(createdatepasarantogel,now()), updatepasarantogel, COALESCE(updatedatepasarantogel,now())  
 			FROM ` + configs.DB_tbl_mst_pasaran + ` 
 			ORDER BY displaypasaran ASC  
 		`

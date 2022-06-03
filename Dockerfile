@@ -1,5 +1,5 @@
 FROM golang:alpine AS isbpbuildmaster
-WORKDIR /go/src/bitbucket.org/isbtotogroup/isbpanel_backend
+WORKDIR /go/src/bitbucket.org/isbtotogroup/isbpanel_api_backend
 COPY . .
 RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o app .

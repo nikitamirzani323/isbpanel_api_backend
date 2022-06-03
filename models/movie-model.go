@@ -52,7 +52,7 @@ func Fetch_movieHome(search string, page, enable int) (helpers.Responsemovie, er
 	sql_select += "SELECT "
 	sql_select += "movieid , movietitle, description, movietype, "
 	sql_select += "rating , imdb, year, views, enabled, COALESCE(posted_id,0),label, urlthumbnail, slug,   "
-	sql_select += "createmovie, COALESCE(createdatemovie,now()), updatemovie, COALESCE(updatedatemovie,now()) "
+	sql_select += "createmovie, to_char(COALESCE(createdatemovie,now()), 'YYYY-MM-DD HH24:MI:SS') , updatemovie, to_char(COALESCE(updatedatemovie,now()), 'YYYY-MM-DD HH24:MI:SS')  "
 	sql_select += "FROM " + configs.DB_VIEW_MOVIE + "  "
 	if search == "" {
 		sql_select += "WHERE enabled = '" + strconv.Itoa(enable) + "' "
@@ -611,7 +611,7 @@ func Fetch_movieseriesHome(search string, page, enable int) (helpers.Responsemov
 	sql_select += "SELECT "
 	sql_select += "movieid , movietitle, description, movietype, "
 	sql_select += "rating , imdb, year, views, enabled, COALESCE(posted_id,0),label, urlthumbnail, slug,   "
-	sql_select += "createmovie, COALESCE(createdatemovie,now()), updatemovie, COALESCE(updatedatemovie,now()) "
+	sql_select += "createmovie, to_char(COALESCE(createdatemovie,now()), 'YYYY-MM-DD HH24:MI:SS'), updatemovie, to_char(COALESCE(updatedatemovie,now()), 'YYYY-MM-DD HH24:MI:SS') "
 	sql_select += "FROM " + configs.DB_VIEW_MOVIESERIES + "  "
 	if search == "" {
 		sql_select += "WHERE enabled = '" + strconv.Itoa(enable) + "' "
@@ -1319,7 +1319,7 @@ func Fetch_genre() (helpers.Response, error) {
 
 	sql_select := `SELECT 
 			idgenre , nmgenre, genredisplay, 
-			creategenre, COALESCE(createdategenre,now()), updategenre, COALESCE(updatedategenre,now())  
+			creategenre, to_char(COALESCE(createdategenre,now()), 'YYYY-MM-DD HH24:MI:SS') , updategenre, to_char(COALESCE(updatedategenre,now()), 'YYYY-MM-DD HH24:MI:SS') 
 			FROM ` + configs.DB_tbl_mst_moviegenre + ` 
 			ORDER BY genredisplay ASC   
 		`

@@ -202,6 +202,64 @@ func PrediksislotDelete(c *fiber.Ctx) error {
 		return c.JSON(result)
 	}
 }
+func PrediksislotGenerator(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_prediksislotgenerator)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+	user := c.Locals("jwt").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	temp_decp := helpers.Decryption(name)
+	client_admin, idruleadmin := helpers.Parsing_Decry(temp_decp, "==")
+	log.Println("RULE :" + client.Page)
+	ruleadmin := models.Get_AdminRule("ruleadmingroup", idruleadmin)
+	flag := models.Get_listitemsearch(ruleadmin, ",", client.Page)
+
+	if !flag {
+		c.Status(fiber.StatusForbidden)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusForbidden,
+			"message": "Anda tidak bisa akses halaman ini",
+			"record":  nil,
+		})
+	} else {
+		result, err := models.Generator_prediksislot(client_admin, client.Providerslot_id)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"status":  fiber.StatusBadRequest,
+				"message": err.Error(),
+				"record":  nil,
+			})
+		}
+		_deleteredis_prediksislot(client.Providerslot_id)
+		return c.JSON(result)
+	}
+}
 func _deleteredis_prediksislot(idproviderslot int) {
 	val_master := helpers.DeleteRedis(Fieldprediksislot_home_redis + "_" + strconv.Itoa(idproviderslot))
 	log.Printf("Redis Delete BACKEND PREDIKSI SLOT : %d", val_master)

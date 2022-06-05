@@ -125,7 +125,7 @@ func Save_prediksislot(
 				WHERE idgameslot=$8 
 			`
 
-		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_mst_domain, "UPDATE",
+		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_gameslot, "UPDATE",
 			idproviderslot, nmgameslot, prediksi, image, status,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
 
@@ -168,5 +168,68 @@ func Delete_prediksislot(admin string, idrecord, idproviderslot int) (helpers.Re
 	res.Message = msg
 	res.Record = nil
 	res.Time = time.Since(render_page).String()
+	return res, nil
+}
+func Generator_prediksislot(admin string, idproviderslot int) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	tglnow, _ := goment.New()
+	render_page := time.Now()
+	con := db.CreateCon()
+	ctx := context.Background()
+
+	sql_select := `SELECT 
+		idgameslot
+		FROM ` + configs.DB_tbl_trx_gameslot + `  
+		WHERE idproviderslot = $1
+	`
+
+	row, err := con.QueryContext(ctx, sql_select, idproviderslot)
+	helpers.ErrorCheck(err)
+	for row.Next() {
+		var (
+			idgameslot_db int
+		)
+
+		err = row.Scan(&idgameslot_db)
+		helpers.ErrorCheck(err)
+		nomor_hasil := 0
+		for {
+			nomor := helpers.GenerateNumber(2)
+			nomor2, _ := strconv.Atoi(nomor)
+			if nomor2 > 9 {
+				nomor_hasil = nomor2
+				break
+			}
+		}
+
+		sql_update := `
+				UPDATE 
+				` + configs.DB_tbl_trx_gameslot + `  
+				SET gameslot_prediksi=$1,  
+				updategameslot=$2, updatedategameslot=$3  
+				WHERE idgameslot=$4 AND idproviderslot=$5 
+			`
+
+		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_gameslot, "UPDATE",
+			nomor_hasil,
+			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idgameslot_db, idproviderslot)
+
+		if flag_update {
+			msg = "Succes"
+			log.Println(msg_update)
+		} else {
+			log.Println(msg_update)
+		}
+
+		msg = "Success"
+	}
+	defer row.Close()
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
+
 	return res, nil
 }

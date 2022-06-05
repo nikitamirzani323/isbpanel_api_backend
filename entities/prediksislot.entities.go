@@ -28,3 +28,7 @@ type Controller_prediksislotdelete struct {
 	Prediksislot_id int    `json:"prediksislot_id" validate:"required"`
 	Providerslot_id int    `json:"providerslot_id" validate:"required"`
 }
+type Controller_prediksislotgenerator struct {
+	Page            string `json:"page" validate:"required"`
+	Providerslot_id int    `json:"providerslot_id" validate:"required"`
+}

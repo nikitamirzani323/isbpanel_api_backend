@@ -124,5 +124,6 @@ func Init() *fiber.App {
 	app.Post("/api/prediksislot", middleware.JWTProtected(), controllers.Prediksislothome)
 	app.Post("/api/prediksislotsave", middleware.JWTProtected(), controllers.PrediksislotSave)
 	app.Post("/api/prediksislotdelete", middleware.JWTProtected(), controllers.PrediksislotDelete)
+	app.Post("/api/prediksislotgenerator", middleware.JWTProtected(), controllers.PrediksislotGenerator)
 	return app
 }

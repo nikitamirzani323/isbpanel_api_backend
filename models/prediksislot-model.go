@@ -14,7 +14,7 @@ import (
 	"github.com/nleeper/goment"
 )
 
-func Fetch_prediksislotHome() (helpers.Response, error) {
+func Fetch_prediksislotHome(idproviderslot int) (helpers.Response, error) {
 	var obj entities.Model_prediksislot
 	var arraobj []entities.Model_prediksislot
 	var res helpers.Response
@@ -23,15 +23,21 @@ func Fetch_prediksislotHome() (helpers.Response, error) {
 	ctx := context.Background()
 	start := time.Now()
 
-	sql_select := `SELECT 
-			A.idgameslot , B.nmproviderslot, A.nmgameslot, A.gameslot_prediksi,  
-			A.gameslot_image , A.gameslot_status, 
-			A.creategameslot, to_char(COALESCE(A.createdategameslot,now()), 'YYYY-MM-DD HH24:MI:SS'), 
-			A.updategameslot, to_char(COALESCE(A.updatedategameslot,now()), 'YYYY-MM-DD HH24:MI:SS') 
-			FROM ` + configs.DB_tbl_trx_gameslot + ` as A  
-			JOIN ` + configs.DB_tbl_mst_providerslot + ` as B ON B.idproviderslot = A.idproviderslot 
-			ORDER BY A.gameslot_prediksi ASC    
-	`
+	sql_select := ""
+	sql_select += ""
+	sql_select += "SELECT "
+	sql_select += "A.idgameslot , B.nmproviderslot, A.nmgameslot, A.gameslot_prediksi, "
+	sql_select += "A.gameslot_image , A.gameslot_status,   "
+	sql_select += "A.creategameslot, to_char(COALESCE(A.createdategameslot,now()), 'YYYY-MM-DD HH24:MI:SS'), "
+	sql_select += "A.updategameslot, to_char(COALESCE(A.updatedategameslot,now()), 'YYYY-MM-DD HH24:MI:SS') "
+	sql_select += "FROM " + configs.DB_tbl_trx_gameslot + " as A  "
+	sql_select += "JOIN " + configs.DB_tbl_mst_providerslot + " as B ON B.idproviderslot = A.idproviderslot  "
+	if idproviderslot > 0 {
+		sql_select += "WHERE A.idproviderslot = '" + strconv.Itoa(idproviderslot) + "' "
+		sql_select += "ORDER BY A.gameslot_prediksi DESC "
+	} else {
+		sql_select += "ORDER BY A.gameslot_prediksi DESC "
+	}
 
 	row, err := con.QueryContext(ctx, sql_select)
 	helpers.ErrorCheck(err)
@@ -94,14 +100,14 @@ func Save_prediksislot(
 				) values (
 					$1, $2, $3, 
 					$4, $5, $6, 
-					$7, $8, $9 
+					$7, $8 
 				)
 			`
 		field_column := configs.DB_tbl_trx_gameslot + tglnow.Format("YYYY")
 		idrecord_counter := Get_counter(field_column)
 		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_gameslot, "INSERT",
 			tglnow.Format("YY")+strconv.Itoa(idrecord_counter), idproviderslot, nmgameslot,
-			0, image, status, admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
+			prediksi, image, status, admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 
 		if flag_insert {
 			msg = "Succes"
@@ -136,5 +142,31 @@ func Save_prediksislot(
 	res.Record = nil
 	res.Time = time.Since(render_page).String()
 
+	return res, nil
+}
+func Delete_prediksislot(admin string, idrecord, idproviderslot int) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	render_page := time.Now()
+
+	sql_delete := `
+		DELETE FROM
+		` + configs.DB_tbl_trx_gameslot + ` 
+		WHERE idgameslot=$1 AND idproviderslot=$2 
+	`
+
+	flag_episode, msg_episode := Exec_SQL(sql_delete, configs.DB_tbl_trx_gameslot, "DELETE", idrecord, idproviderslot)
+
+	if flag_episode {
+		msg = "Succes"
+		log.Println(msg_episode)
+	} else {
+		log.Println(msg_episode)
+	}
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
 	return res, nil
 }

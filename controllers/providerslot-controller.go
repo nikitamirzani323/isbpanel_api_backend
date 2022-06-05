@@ -13,7 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-const Fieldproviderslot_home_redis = "LISTPROVIDER_BACKEND_ISBPANEL"
+const Fieldproviderslot_home_redis = "LISTPROVIDERSLOT_BACKEND_ISBPANEL"
 
 func Providerslothome(c *fiber.Ctx) error {
 	var obj entities.Model_providerslot
@@ -27,6 +27,7 @@ func Providerslothome(c *fiber.Ctx) error {
 		providerslot_name, _ := jsonparser.GetString(value, "providerslot_name")
 		providerslot_display, _ := jsonparser.GetInt(value, "providerslot_display")
 		providerslot_counter, _ := jsonparser.GetInt(value, "providerslot_counter")
+		providerslot_totalgameslot, _ := jsonparser.GetInt(value, "providerslot_totalgameslot")
 		providerslot_image, _ := jsonparser.GetString(value, "providerslot_image")
 		providerslot_slug, _ := jsonparser.GetString(value, "providerslot_slug")
 		providerslot_title, _ := jsonparser.GetString(value, "providerslot_title")
@@ -39,6 +40,7 @@ func Providerslothome(c *fiber.Ctx) error {
 		obj.Providerslot_name = providerslot_name
 		obj.Providerslot_display = int(providerslot_display)
 		obj.Providerslot_counter = int(providerslot_counter)
+		obj.Providerslot_totalgameslot = int(providerslot_totalgameslot)
 		obj.Providerslot_image = providerslot_image
 		obj.Providerslot_slug = providerslot_slug
 		obj.Providerslot_title = providerslot_title
@@ -119,7 +121,16 @@ func ProviderslotSave(c *fiber.Ctx) error {
 		})
 	}
 
+	_deleteredis_providerslot()
+	return c.JSON(result)
+}
+func _deleteredis_providerslot() {
 	val_master := helpers.DeleteRedis(Fieldproviderslot_home_redis)
 	log.Printf("Redis Delete BACKEND PROVIDER SLOT : %d", val_master)
-	return c.JSON(result)
+
+	val_client_providerslot := helpers.DeleteRedis("LISTPROVIDERSLOT_FRONTEND_ISBPANEL")
+	log.Printf("Redis Delete client PREDIKSI SLOT : %d", val_client_providerslot)
+
+	val_client_prediksislot := helpers.DeleteRedis("LISTPREDIKSISLOT_FRONTEND_ISBPANEL")
+	log.Printf("Redis Delete client PREDIKSI SLOT : %d", val_client_prediksislot)
 }

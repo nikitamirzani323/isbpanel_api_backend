@@ -66,7 +66,7 @@ func Pasaranhome(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Field_home_redis, result, 0)
+		helpers.SetRedis(Field_home_redis, result, 180*time.Minute)
 		log.Println("PASARAN MYSQL")
 		return c.JSON(result)
 	} else {
@@ -189,7 +189,7 @@ func Keluaranhome(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Field_keluaran_redis+"_"+client.Pasaran_id, result, 0)
+		helpers.SetRedis(Field_keluaran_redis+"_"+client.Pasaran_id, result, 180*time.Minute)
 		log.Println("KELUARAN MYSQL")
 		return c.JSON(result)
 	} else {
@@ -369,7 +369,7 @@ func Prediksihome(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Field_prediksi_redis+"_"+client.Pasaran_id, result, 0)
+		helpers.SetRedis(Field_prediksi_redis+"_"+client.Pasaran_id, result, 180*time.Minute)
 		log.Println("PREDIKSI MYSQL")
 		return c.JSON(result)
 	} else {

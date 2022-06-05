@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"strconv"
 	"time"
@@ -64,6 +65,7 @@ func Fetch_providerslotHome() (helpers.Response, error) {
 		obj.Providerslot_counter = providerslot_counter_db
 		obj.Providerslot_status = providerslot_status_db
 		obj.Providerslot_image = providerslot_image_db
+		obj.Providerslot_totalgameslot = _GetTotalGameSlot(idproviderslot_db)
 		obj.Providerslot_slug = providerslot_slug_db
 		obj.Providerslot_title = providerslot_title_db
 		obj.Providerslot_descp = providerslot_descp_db
@@ -147,4 +149,23 @@ func Save_providerslot(
 	res.Time = time.Since(render_page).String()
 
 	return res, nil
+}
+func _GetTotalGameSlot(idrecord int) int {
+	con := db.CreateCon()
+	ctx := context.Background()
+	total := 0
+
+	sql_select := `SELECT
+		count(idgameslot) as total  
+		FROM ` + configs.DB_tbl_trx_gameslot + `  
+		WHERE idproviderslot = $1 
+	`
+	row := con.QueryRowContext(ctx, sql_select, idrecord)
+	switch e := row.Scan(&total); e {
+	case sql.ErrNoRows:
+	case nil:
+	default:
+		helpers.ErrorCheck(e)
+	}
+	return total
 }

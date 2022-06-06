@@ -8,8 +8,8 @@ type Model_pasaran struct {
 	Pasaran_jamjadwal  string `json:"pasaran_jamjadwal"`
 	Pasaran_display    int    `json:"pasaran_display"`
 	Pasaran_slug       string `json:"pasaran_slug"`
-	Pasaran_meta_descp string `json:"pasaran_meta_title"`
-	Pasaran_meta_title string `json:"pasaran_meta_descp"`
+	Pasaran_meta_title string `json:"pasaran_meta_title"`
+	Pasaran_meta_descp string `json:"pasaran_meta_descp"`
 	Pasaran_status     string `json:"pasaran_status"`
 	Pasaran_statuscss  string `json:"pasaran_statuscss"`
 	Pasaran_keluaran   string `json:"pasaran_keluaran"`
@@ -30,15 +30,18 @@ type Model_prediksi struct {
 	Prediksi_nomor   string `json:"prediksi_nomor"`
 }
 type Controller_pasaransave struct {
-	Sdata             string `json:"sdata" validate:"required"`
-	Page              string `json:"page" validate:"required"`
-	Pasaran_id        string `json:"pasaran_id"`
-	Pasaran_name      string `json:"pasaran_name" validate:"required"`
-	Pasaran_url       string `json:"pasaran_url" validate:"required"`
-	Pasaran_diundi    string `json:"pasaran_diundi" validate:"required"`
-	Pasaran_jamjadwal string `json:"pasaran_jamjadwal" validate:"required"`
-	Pasaran_display   int    `json:"pasaran_display" validate:"required"`
-	Pasaran_status    string `json:"pasaran_status" `
+	Sdata              string `json:"sdata" validate:"required"`
+	Page               string `json:"page" validate:"required"`
+	Pasaran_id         string `json:"pasaran_id"`
+	Pasaran_name       string `json:"pasaran_name" validate:"required"`
+	Pasaran_url        string `json:"pasaran_url" validate:"required"`
+	Pasaran_diundi     string `json:"pasaran_diundi" validate:"required"`
+	Pasaran_jamjadwal  string `json:"pasaran_jamjadwal" validate:"required"`
+	Pasaran_display    int    `json:"pasaran_display" validate:"required"`
+	Pasaran_slug       string `json:"pasaran_slug" validate:"required"`
+	Pasaran_meta_title string `json:"pasaran_meta_title" validate:"required"`
+	Pasaran_meta_descp string `json:"pasaran_meta_descp" validate:"required"`
+	Pasaran_status     string `json:"pasaran_status" `
 }
 type Controller_keluaran struct {
 	Page       string `json:"page" validate:"required"`

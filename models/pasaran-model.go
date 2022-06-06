@@ -29,8 +29,8 @@ func Fetch_pasaranHome() (helpers.Response, error) {
 			idpasarantogel , nmpasarantogel, 
 			urlpasaran , pasarandiundi, jamjadwal::text, displaypasaran, statuspasaran, 
 			slugpasaran , pasaran_meta_title, pasaran_meta_descp, 
-			createpasarantogel, to_char(COALESCE(A.createdatepasarantogel,now()), 'YYYY-MM-DD HH24:MI:SS') , 
-			updatepasarantogel, to_char(COALESCE(A.updatedatepasarantogel,now()), 'YYYY-MM-DD HH24:MI:SS')   
+			createpasarantogel, to_char(COALESCE(createdatepasarantogel,now()), 'YYYY-MM-DD HH24:MI:SS') , 
+			updatepasarantogel, to_char(COALESCE(updatedatepasarantogel,now()), 'YYYY-MM-DD HH24:MI:SS')   
 			FROM ` + configs.DB_tbl_mst_pasaran + ` 
 			ORDER BY displaypasaran ASC  
 		`

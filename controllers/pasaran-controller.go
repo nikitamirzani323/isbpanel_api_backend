@@ -119,10 +119,12 @@ func Pasaransave(c *fiber.Ctx) error {
 	temp_decp := helpers.Decryption(name)
 	client_admin, _ := helpers.Parsing_Decry(temp_decp, "==")
 
+	// admin, idrecord, nmpasarantogel, urlpasaran, pasarandiundi, jamjadwal, status,
+	// slug, meta_title, meta_descp, sData string, display int
 	result, err := models.Save_pasaran(
 		client_admin,
-		client.Pasaran_id, client.Pasaran_name, client.Pasaran_url,
-		client.Pasaran_diundi, client.Pasaran_jamjadwal, client.Pasaran_status, client.Sdata, client.Pasaran_display)
+		client.Pasaran_id, client.Pasaran_name, client.Pasaran_url, client.Pasaran_diundi, client.Pasaran_jamjadwal, client.Pasaran_status,
+		client.Pasaran_slug, client.Pasaran_meta_title, client.Pasaran_meta_descp, client.Sdata, client.Pasaran_display)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{

@@ -35,6 +35,9 @@ func Pasaranhome(c *fiber.Ctx) error {
 		pasaran_diundi, _ := jsonparser.GetString(value, "pasaran_diundi")
 		pasaran_jamjadwal, _ := jsonparser.GetString(value, "pasaran_jamjadwal")
 		pasaran_display, _ := jsonparser.GetInt(value, "pasaran_display")
+		pasaran_slug, _ := jsonparser.GetString(value, "pasaran_slug")
+		pasaran_meta_title, _ := jsonparser.GetString(value, "pasaran_meta_title")
+		pasaran_meta_descp, _ := jsonparser.GetString(value, "pasaran_meta_descp")
 		pasaran_status, _ := jsonparser.GetString(value, "pasaran_status")
 		pasaran_statuscss, _ := jsonparser.GetString(value, "pasaran_statuscss")
 		pasaran_keluaran, _ := jsonparser.GetString(value, "pasaran_keluaran")
@@ -48,6 +51,9 @@ func Pasaranhome(c *fiber.Ctx) error {
 		obj.Pasaran_diundi = pasaran_diundi
 		obj.Pasaran_jamjadwal = pasaran_jamjadwal
 		obj.Pasaran_display = int(pasaran_display)
+		obj.Pasaran_slug = pasaran_slug
+		obj.Pasaran_meta_title = pasaran_meta_title
+		obj.Pasaran_meta_descp = pasaran_meta_descp
 		obj.Pasaran_status = pasaran_status
 		obj.Pasaran_statuscss = pasaran_statuscss
 		obj.Pasaran_keluaran = pasaran_keluaran
@@ -125,10 +131,7 @@ func Pasaransave(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	val_pasaran := helpers.DeleteRedis(Field_home_redis)
-	log.Printf("Redis Delete BACKEND PASARAN : %d", val_pasaran)
-	val_client_pasaran := helpers.DeleteRedis(Field_client_pasaran_redis)
-	log.Printf("Redis Delete CLIENT PASARAN : %d", val_client_pasaran)
+	_deleteredis_pasaran("")
 	return c.JSON(result)
 }
 func Keluaranhome(c *fiber.Ctx) error {
@@ -247,15 +250,7 @@ func Keluaransave(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	val_pasaran := helpers.DeleteRedis(Field_home_redis)
-	val_keluaran := helpers.DeleteRedis(Field_keluaran_redis + "_" + client.Pasaran_id)
-	log.Printf("Redis Delete BACKEND PASARAN : %d", val_pasaran)
-	log.Printf("Redis Delete BACKEND KELUARAN : %d", val_keluaran)
-	val_client_pasaran := helpers.DeleteRedis(Field_client_pasaran_redis)
-	log.Printf("Redis Delete CLIENT PASARAN : %d", val_client_pasaran)
-	val_client_keluaran := helpers.DeleteRedis(Field_client_keluaran_redis + "_" + client.Pasaran_id)
-	log.Printf("Redis Delete CLIENT KELUARAN : %d", val_client_keluaran)
-
+	_deleteredis_pasaran(client.Pasaran_id)
 	return c.JSON(result)
 }
 func Keluarandelete(c *fiber.Ctx) error {
@@ -301,14 +296,7 @@ func Keluarandelete(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	val_pasaran := helpers.DeleteRedis(Field_home_redis)
-	val_keluaran := helpers.DeleteRedis(Field_keluaran_redis + "_" + client.Pasaran_id)
-	log.Printf("Redis Delete BACKEND PASARAN : %d", val_pasaran)
-	log.Printf("Redis Delete BACKEND KELUARAN : %d", val_keluaran)
-	val_client_pasaran := helpers.DeleteRedis(Field_client_pasaran_redis)
-	log.Printf("Redis Delete CLIENT PASARAN : %d", val_client_pasaran)
-	val_client_keluaran := helpers.DeleteRedis(Field_client_keluaran_redis + "_" + client.Pasaran_id)
-	log.Printf("Redis Delete CLIENT KELUARAN : %d", val_client_keluaran)
+	_deleteredis_pasaran(client.Pasaran_id)
 	return c.JSON(result)
 }
 func Prediksihome(c *fiber.Ctx) error {
@@ -427,14 +415,7 @@ func Prediksisave(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	val_pasaran := helpers.DeleteRedis(Field_home_redis)
-	val_prediksi := helpers.DeleteRedis(Field_prediksi_redis + "_" + client.Pasaran_id)
-	log.Printf("Redis Delete BACKEND PASARAN : %d", val_pasaran)
-	log.Printf("Redis Delete BACKEND PREDIKSI : %d", val_prediksi)
-	val_client_pasaran := helpers.DeleteRedis(Field_client_pasaran_redis)
-	log.Printf("Redis Delete CLIENT PASARAN : %d", val_client_pasaran)
-	val_client_keluaran := helpers.DeleteRedis(Field_client_keluaran_redis + "_" + client.Pasaran_id)
-	log.Printf("Redis Delete CLIENT KELUARAN : %d", val_client_keluaran)
+	_deleteredis_pasaran(client.Pasaran_id)
 	return c.JSON(result)
 }
 func Prediksidelete(c *fiber.Ctx) error {
@@ -480,13 +461,24 @@ func Prediksidelete(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
+	_deleteredis_pasaran(client.Pasaran_id)
+	return c.JSON(result)
+}
+func _deleteredis_pasaran(pasaran_id string) {
+	val_master := helpers.DeleteRedis(Field_home_redis)
+	log.Printf("Redis Delete BACKEND PASARAN : %d", val_master)
+
 	val_pasaran := helpers.DeleteRedis(Field_home_redis)
-	val_prediksi := helpers.DeleteRedis(Field_prediksi_redis + "_" + client.Pasaran_id)
+	val_keluaran := helpers.DeleteRedis(Field_keluaran_redis + "_" + pasaran_id)
+	val_prediksi := helpers.DeleteRedis(Field_prediksi_redis + "_" + pasaran_id)
 	log.Printf("Redis Delete BACKEND PASARAN : %d", val_pasaran)
+	log.Printf("Redis Delete BACKEND KELUARAN : %d", val_keluaran)
 	log.Printf("Redis Delete BACKEND PREDIKSI : %d", val_prediksi)
+
+	//CLIENT
 	val_client_pasaran := helpers.DeleteRedis(Field_client_pasaran_redis)
 	log.Printf("Redis Delete CLIENT PASARAN : %d", val_client_pasaran)
-	val_client_keluaran := helpers.DeleteRedis(Field_client_keluaran_redis + "_" + client.Pasaran_id)
+
+	val_client_keluaran := helpers.DeleteRedis(Field_client_keluaran_redis + "_" + pasaran_id)
 	log.Printf("Redis Delete CLIENT KELUARAN : %d", val_client_keluaran)
-	return c.JSON(result)
 }

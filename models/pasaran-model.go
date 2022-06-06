@@ -28,7 +28,9 @@ func Fetch_pasaranHome() (helpers.Response, error) {
 	sql_select := `SELECT 
 			idpasarantogel , nmpasarantogel, 
 			urlpasaran , pasarandiundi, jamjadwal::text, displaypasaran, statuspasaran, 
-			createpasarantogel,  COALESCE(createdatepasarantogel,now()), updatepasarantogel, COALESCE(updatedatepasarantogel,now())  
+			slugpasaran , pasaran_meta_title, pasaran_meta_descp, 
+			createpasarantogel, to_char(COALESCE(A.createdatepasarantogel,now()), 'YYYY-MM-DD HH24:MI:SS') , 
+			updatepasarantogel, to_char(COALESCE(A.updatedatepasarantogel,now()), 'YYYY-MM-DD HH24:MI:SS')   
 			FROM ` + configs.DB_tbl_mst_pasaran + ` 
 			ORDER BY displaypasaran ASC  
 		`
@@ -39,11 +41,13 @@ func Fetch_pasaranHome() (helpers.Response, error) {
 		var (
 			displaypasaran_db                                                                                     int
 			idpasarantogel_db, nmpasarantogel_db, urlpasaran_db, pasarandiundi_db, jamjadwal_db, statuspasaran_db string
+			slugpasaran_db, pasaran_meta_title_db, pasaran_meta_descp_db                                          string
 			createpasarantogel_db, createdatepasarantogel_db, updatepasarantogel_db, updatedatepasarantogel_db    string
 		)
 
 		err = row.Scan(
 			&idpasarantogel_db, &nmpasarantogel_db, &urlpasaran_db, &pasarandiundi_db, &jamjadwal_db, &displaypasaran_db, &statuspasaran_db,
+			&slugpasaran_db, &pasaran_meta_title_db, &pasaran_meta_descp_db,
 			&createpasarantogel_db, &createdatepasarantogel_db, &updatepasarantogel_db, &updatedatepasarantogel_db)
 
 		helpers.ErrorCheck(err)
@@ -102,6 +106,9 @@ func Fetch_pasaranHome() (helpers.Response, error) {
 		obj.Pasaran_diundi = pasarandiundi_db
 		obj.Pasaran_jamjadwal = jamjadwal_db
 		obj.Pasaran_display = displaypasaran_db
+		obj.Pasaran_slug = slugpasaran_db
+		obj.Pasaran_meta_title = pasaran_meta_title_db
+		obj.Pasaran_meta_descp = pasaran_meta_descp_db
 		obj.Pasaran_status = statuspasaran
 		obj.Pasaran_statuscss = statuspasarancss
 		obj.Pasaran_keluaran = hasil_db
@@ -120,7 +127,9 @@ func Fetch_pasaranHome() (helpers.Response, error) {
 
 	return res, nil
 }
-func Save_pasaran(admin, idrecord, nmpasarantogel, urlpasaran, pasarandiundi, jamjadwal, status, sData string, display int) (helpers.Response, error) {
+func Save_pasaran(
+	admin, idrecord, nmpasarantogel, urlpasaran, pasarandiundi, jamjadwal, status,
+	slug, meta_title, meta_descp, sData string, display int) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"
 	con := db.CreateCon()
@@ -136,20 +145,21 @@ func Save_pasaran(admin, idrecord, nmpasarantogel, urlpasaran, pasarandiundi, ja
 				insert into
 				` + configs.DB_tbl_mst_pasaran + ` (
 					idpasarantogel , nmpasarantogel, urlpasaran, pasarandiundi, jamjadwal, displaypasaran, statuspasaran, 
+					slugpasaran , pasaran_meta_title, pasaran_meta_descp, 
 					createpasarantogel, createdatepasarantogel
 				) values (
 					$1 ,$2, $3, $4, $5, $6, $7,
-					$8, $9
+					$8, $9, $10, 
+					$11, $12 
 				)
 			`
 			stmt_insert, e_insert := con.PrepareContext(ctx, sql_insert)
 			helpers.ErrorCheck(e_insert)
 			defer stmt_insert.Close()
-			res_newrecord, e_newrecord := stmt_insert.ExecContext(
-				ctx,
+			res_newrecord, e_newrecord := stmt_insert.ExecContext(ctx,
 				strings.ToUpper(idrecord), nmpasarantogel, urlpasaran, pasarandiundi, jamjadwal, display, status,
-				admin,
-				tglnow.Format("YYYY-MM-DD HH:mm:ss"))
+				slug, meta_title, meta_descp,
+				admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 			helpers.ErrorCheck(e_newrecord)
 			insert, e := res_newrecord.RowsAffected()
 			helpers.ErrorCheck(e)
@@ -166,17 +176,15 @@ func Save_pasaran(admin, idrecord, nmpasarantogel, urlpasaran, pasarandiundi, ja
 				UPDATE 
 				` + configs.DB_tbl_mst_pasaran + `  
 				SET nmpasarantogel=$1,urlpasaran=$2,pasarandiundi=$3, jamjadwal=$4, displaypasaran=$5, statuspasaran=$6,
-				updatepasarantogel=$7, updatedatepasarantogel=$8 
-				WHERE idpasarantogel =$9 
+				slugpasaran=$7, pasaran_meta_title=$8, pasaran_meta_descp=$9,
+				updatepasarantogel=$10, updatedatepasarantogel=$11  
+				WHERE idpasarantogel=$12 
 			`
 		stmt_record, e := con.PrepareContext(ctx, sql_update)
 		helpers.ErrorCheck(e)
-		rec_record, e_record := stmt_record.ExecContext(
-			ctx,
-			nmpasarantogel, urlpasaran, pasarandiundi, jamjadwal, display, status,
-			admin,
-			tglnow.Format("YYYY-MM-DD HH:mm:ss"),
-			idrecord)
+		rec_record, e_record := stmt_record.ExecContext(ctx,
+			nmpasarantogel, urlpasaran, pasarandiundi, jamjadwal, display, status, slug, meta_title, meta_descp,
+			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
 		helpers.ErrorCheck(e_record)
 		update_record, e_record := rec_record.RowsAffected()
 		helpers.ErrorCheck(e_record)
@@ -191,17 +199,10 @@ func Save_pasaran(admin, idrecord, nmpasarantogel, urlpasaran, pasarandiundi, ja
 		}
 	}
 
-	if flag {
-		res.Status = fiber.StatusOK
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	} else {
-		res.Status = fiber.StatusBadRequest
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	}
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
 
 	return res, nil
 }
@@ -297,23 +298,16 @@ func Save_keluaran(admin, idpasaran, tanggal, nomor string) (helpers.Response, e
 		msg = "Duplicate Entry"
 	}
 
-	if flag {
-		res.Status = fiber.StatusOK
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	} else {
-		res.Status = fiber.StatusBadRequest
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	}
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
 
 	return res, nil
 }
 func Delete_keluaran(admin, idpasaran string, idtrxkeluaran int) (helpers.Response, error) {
 	var res helpers.Response
-	msg := "Failed"
+	msg := "Data Not Found"
 	con := db.CreateCon()
 	ctx := context.Background()
 	render_page := time.Now()
@@ -339,21 +333,12 @@ func Delete_keluaran(admin, idpasaran string, idtrxkeluaran int) (helpers.Respon
 			msg = "Succes"
 			log.Println("Data Berhasil di delete")
 		}
-	} else {
-		msg = "Data Not Found"
 	}
 
-	if flag {
-		res.Status = fiber.StatusOK
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	} else {
-		res.Status = fiber.StatusBadRequest
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	}
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
 
 	return res, nil
 }
@@ -446,17 +431,10 @@ func Save_prediksi(admin, idpasaran, tanggal, bbfs, nomor string) (helpers.Respo
 		msg = "Duplicate Entry"
 	}
 
-	if flag {
-		res.Status = fiber.StatusOK
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	} else {
-		res.Status = fiber.StatusBadRequest
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	}
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
 
 	return res, nil
 }
@@ -488,21 +466,12 @@ func Delete_prediksi(admin, idpasaran string, idprediksi int) (helpers.Response,
 			msg = "Succes"
 			log.Println("Data Berhasil di delete")
 		}
-	} else {
-		msg = "Data Not Found"
 	}
 
-	if flag {
-		res.Status = fiber.StatusOK
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	} else {
-		res.Status = fiber.StatusBadRequest
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	}
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
 
 	return res, nil
 }

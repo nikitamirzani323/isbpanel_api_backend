@@ -1,18 +1,21 @@
 package entities
 
 type Model_pasaran struct {
-	Pasaran_id        string `json:"pasaran_id"`
-	Pasaran_name      string `json:"pasaran_name"`
-	Pasaran_url       string `json:"pasaran_url"`
-	Pasaran_diundi    string `json:"pasaran_diundi"`
-	Pasaran_jamjadwal string `json:"pasaran_jamjadwal"`
-	Pasaran_display   int    `json:"pasaran_display"`
-	Pasaran_status    string `json:"pasaran_status"`
-	Pasaran_statuscss string `json:"pasaran_statuscss"`
-	Pasaran_keluaran  string `json:"pasaran_keluaran"`
-	Pasaran_prediksi  string `json:"pasaran_prediksi"`
-	Pasaran_create    string `json:"pasaran_create"`
-	Pasaran_update    string `json:"pasaran_update"`
+	Pasaran_id         string `json:"pasaran_id"`
+	Pasaran_name       string `json:"pasaran_name"`
+	Pasaran_url        string `json:"pasaran_url"`
+	Pasaran_diundi     string `json:"pasaran_diundi"`
+	Pasaran_jamjadwal  string `json:"pasaran_jamjadwal"`
+	Pasaran_display    int    `json:"pasaran_display"`
+	Pasaran_slug       string `json:"pasaran_slug"`
+	Pasaran_meta_descp string `json:"pasaran_meta_title"`
+	Pasaran_meta_title string `json:"pasaran_meta_descp"`
+	Pasaran_status     string `json:"pasaran_status"`
+	Pasaran_statuscss  string `json:"pasaran_statuscss"`
+	Pasaran_keluaran   string `json:"pasaran_keluaran"`
+	Pasaran_prediksi   string `json:"pasaran_prediksi"`
+	Pasaran_create     string `json:"pasaran_create"`
+	Pasaran_update     string `json:"pasaran_update"`
 }
 type Model_keluaran struct {
 	Keluaran_id      int    `json:"keluaran_id"`

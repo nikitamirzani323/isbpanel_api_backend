@@ -14,6 +14,7 @@ import (
 )
 
 const Fielddomain_home_redis = "LISTDOMAIN_BACKEND_ISBPANEL"
+const Fielddomain_frontend_redis = "LISTDOMAIN_FRONTEND_ISBPANEL"
 
 func Domainhome(c *fiber.Ctx) error {
 	var obj entities.Model_domain
@@ -108,5 +109,8 @@ func DomainSave(c *fiber.Ctx) error {
 
 	val_master := helpers.DeleteRedis(Fielddomain_home_redis)
 	log.Printf("Redis Delete BACKEND DOMAIN : %d", val_master)
+
+	val_client := helpers.DeleteRedis(Fielddomain_frontend_redis)
+	log.Printf("Redis Delete FRONTEND DOMAIN : %d", val_client)
 	return c.JSON(result)
 }

@@ -14,6 +14,6 @@ type Model_listdepartement struct {
 type Controller_departementsave struct {
 	Page             string `json:"page" validate:"required"`
 	Sdata            string `json:"sdata" validate:"required"`
-	Departement_id   string `json:"departement_id"`
+	Departement_id   string `json:"departement_id" validate:"required"`
 	Departement_name string `json:"departement_name" validate:"required"`
 }

@@ -136,5 +136,10 @@ func _deleteredis_employee() {
 	val_client := helpers.DeleteRedis(Fieldemployee_frontend_redis)
 	log.Printf("Redis Delete FRONTEND EMPLOYEE : %d", val_client)
 
-	_deleteredis_departement()
+	val_master_departement := helpers.DeleteRedis(Fielddepartement_home_redis)
+	log.Printf("Redis Delete BACKEND DEPARTEMENT : %d", val_master_departement)
+
+	//CLIENT
+	val_client_departement := helpers.DeleteRedis(Fielddepartement_frontend_redis)
+	log.Printf("Redis Delete FRONTEND DEPARTEMENT : %d", val_client_departement)
 }

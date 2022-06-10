@@ -3,7 +3,7 @@ version: '2'
 services:
   isbpanel-api-backend:
     container_name: isbpanel-api-backend
-    image: isbpanel-api-backend:0.2.1
+    image: isbpanel-api-backend:0.2.2
     build: .
     ports:
       - 5052:5052

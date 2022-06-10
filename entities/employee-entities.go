@@ -15,11 +15,9 @@ type Controller_employeesave struct {
 	Page              string `json:"page" validate:"required"`
 	Sdata             string `json:"sdata" validate:"required"`
 	Employee_username string `json:"employee_username" validate:"required"`
-	Employee_password string `json:"employee_password" validate:"required"`
+	Employee_password string `json:"employee_password"`
 	Employee_iddepart string `json:"employee_iddepart" validate:"required"`
 	Employee_name     string `json:"employee_name" validate:"required"`
 	Employee_phone    string `json:"employee_phone" validate:"required"`
 	Employee_status   string `json:"employee_status" validate:"required"`
-	Employee_create   string `json:"employee_create" validate:"required"`
-	Employee_update   string `json:"employee_update" validate:"required"`
 }

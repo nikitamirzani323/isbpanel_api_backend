@@ -30,7 +30,7 @@ func Fetch_employeeHome() (helpers.ResponseEmployee, error) {
 			A.createemployee, to_char(COALESCE(A.createdateemployee,now()), 'YYYY-MM-DD HH24:MI:SS'), 
 			A.updateemployee, to_char(COALESCE(A.updatedateemployee,now()), 'YYYY-MM-DD HH24:MI:SS') 
 			FROM ` + configs.DB_tbl_mst_employee + ` as A 
-			JOIN ` + configs.DB_tbl_mst_departement + ` as B.iddepartement = A.iddepartement  
+			JOIN ` + configs.DB_tbl_mst_departement + ` as B ON B.iddepartement = A.iddepartement  
 			ORDER BY A.createdateemployee DESC   
 	`
 
@@ -82,12 +82,12 @@ func Fetch_employeeHome() (helpers.ResponseEmployee, error) {
 			iddepartement_db, nmdepartement_db string
 		)
 
-		err = row.Scan(&iddepartement_db, &nmdepartement_db)
+		errdepart = rowdepart.Scan(&iddepartement_db, &nmdepartement_db)
 
 		helpers.ErrorCheck(errdepart)
 
 		objdepart.Departement_id = iddepartement_db
-		objdepart.Departement_name = iddepartement_db
+		objdepart.Departement_name = nmdepartement_db
 		arraobjdepart = append(arraobjdepart, objdepart)
 		msg = "Success"
 	}

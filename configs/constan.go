@@ -4,6 +4,8 @@ const (
 	DB_tbl_counter             string = "tbl_counter"
 	DB_tbl_admin               string = "tbl_admin"
 	DB_tbl_admingroup          string = "tbl_admingroup"
+	DB_tbl_mst_employee        string = "tbl_mst_employee"
+	DB_tbl_mst_departement     string = "tbl_mst_departement"
 	DB_tbl_mst_banner          string = "tbl_mst_banner"
 	DB_tbl_mst_websiteagen     string = "tbl_mst_websiteagen"
 	DB_tbl_mst_game            string = "tbl_mst_game"

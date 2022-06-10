@@ -37,7 +37,7 @@ func Departementhome(c *fiber.Ctx) error {
 	})
 
 	if !flag {
-		result, err := models.Fetch_domainHome()
+		result, err := models.Fetch_departementHome()
 		if err != nil {
 			c.Status(fiber.StatusBadRequest)
 			return c.JSON(fiber.Map{
@@ -116,5 +116,11 @@ func _deleteredis_departement() {
 	val_client := helpers.DeleteRedis(Fielddepartement_frontend_redis)
 	log.Printf("Redis Delete FRONTEND DEPARTEMENT : %d", val_client)
 
-	_deleteredis_employee()
+	val_master_employee := helpers.DeleteRedis(Fieldemployee_home_redis)
+	log.Printf("Redis Delete BACKEND EMPLOYEE : %d", val_master_employee)
+
+	//CLIENT
+	val_client_employee := helpers.DeleteRedis(Fieldemployee_frontend_redis)
+	log.Printf("Redis Delete FRONTEND EMPLOYEE : %d", val_client_employee)
+
 }

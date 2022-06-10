@@ -78,6 +78,73 @@ func Employeehome(c *fiber.Ctx) error {
 		})
 	}
 }
+func EmployeeByDepart(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_employeebydepart)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+
+	var obj entities.Model_employeebydepart
+	var arraobj []entities.Model_employeebydepart
+	render_page := time.Now()
+	resultredis, flag := helpers.GetRedis(Fieldemployee_home_redis + "_" + client.Employee_iddepart)
+	jsonredis := []byte(resultredis)
+	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
+	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		employee_username, _ := jsonparser.GetString(value, "employee_username")
+		employee_name, _ := jsonparser.GetString(value, "employee_name")
+
+		obj.Employee_username = employee_username
+		obj.Employee_name = employee_name
+		arraobj = append(arraobj, obj)
+	})
+
+	if !flag {
+		result, err := models.Fetch_employeeByDepartement(client.Employee_iddepart)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"status":  fiber.StatusBadRequest,
+				"message": err.Error(),
+				"record":  nil,
+			})
+		}
+		helpers.SetRedis(Fieldemployee_home_redis+"_"+client.Employee_iddepart, result, 60*time.Minute)
+		log.Println("EMPLOYEE BY DEPARTEMENT MYSQL")
+		return c.JSON(result)
+	} else {
+		log.Println("EMPLOYEE BY DEPARTEMENT CACHE")
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusOK,
+			"message": "Success",
+			"record":  arraobj,
+			"time":    time.Since(render_page).String(),
+		})
+	}
+}
 func EmployeeSave(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
 	client := new(entities.Controller_employeesave)

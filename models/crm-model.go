@@ -52,7 +52,8 @@ func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
 	sql_select += "SELECT "
 	sql_select += "idusersales , phone, nama, "
 	sql_select += "source , statususersales,  "
-	sql_select += "createusersales, to_char(COALESCE(createdateusersales,NOW()), 'YYYY-MM-DD HH24:MI:SS'), updateusersales, to_char(COALESCE(updatedateusersales,NOW()) , 'YYYY-MM-DD HH24:MI:SS')"
+	sql_select += "createusersales, to_char(COALESCE(createdateusersales,NOW()), 'YYYY-MM-DD HH24:MI:SS'), "
+	sql_select += "updateusersales, to_char(COALESCE(updatedateusersales,NOW()) , 'YYYY-MM-DD HH24:MI:SS')"
 	sql_select += "FROM " + configs.DB_tbl_trx_usersales + "  "
 	if search == "" {
 		sql_select += "ORDER BY createdateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
@@ -112,6 +113,67 @@ func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
 	res.Record = arraobj
 	res.Perpage = perpage
 	res.Totalrecord = totalrecord
+	res.Time = time.Since(start).String()
+
+	return res, nil
+}
+func Fetch_crmsales(member_phone string) (helpers.Response, error) {
+	var obj entities.Model_crmsales
+	var arraobj []entities.Model_crmsales
+	var res helpers.Response
+	msg := "Data Not Found"
+	con := db.CreateCon()
+	ctx := context.Background()
+	start := time.Now()
+
+	sql_select := `SELECT 
+			A.idcrmsales , A.phone, C.nama, A.username, B.nmemployee,   
+			A.createcrmsales, to_char(COALESCE(A.createdatecrmsales,now()), 'YYYY-MM-DD HH24:MI:SS'), 
+			A.updatecrmsales, to_char(COALESCE(A.updatedatecrmsales,now()), 'YYYY-MM-DD HH24:MI:SS') 
+			FROM ` + configs.DB_tbl_trx_crmsales + ` as A  
+			JOIN ` + configs.DB_tbl_mst_employee + ` as B ON B.username = A.username   
+			JOIN ` + configs.DB_tbl_trx_usersales + ` as C ON C.phone = A.phone    
+			WHERE A.phone = $1 
+			ORDER BY A.idcrmsales DESC   
+	`
+
+	row, err := con.QueryContext(ctx, sql_select, member_phone)
+	helpers.ErrorCheck(err)
+	for row.Next() {
+		var (
+			idcrmsales_db                                                                      int
+			phone_db, nama_db, username_db, nmemployee_db                                      string
+			createcrmsales_db, createdatecrmsales_db, updatecrmsales_db, updatedatecrmsales_db string
+		)
+
+		err = row.Scan(&idcrmsales_db, &phone_db, &nama_db, &username_db, &nmemployee_db,
+			&createcrmsales_db, &createdatecrmsales_db, &updatecrmsales_db, &updatedatecrmsales_db)
+
+		helpers.ErrorCheck(err)
+		create := ""
+		update := ""
+		if createcrmsales_db != "" {
+			create = createcrmsales_db + ", " + createdatecrmsales_db
+		}
+		if updatecrmsales_db != "" {
+			update = updatecrmsales_db + ", " + updatedatecrmsales_db
+		}
+
+		obj.Crmsales_id = idcrmsales_db
+		obj.Crmsales_phone = phone_db
+		obj.Crmsales_namamember = nama_db
+		obj.Crmsales_username = username_db
+		obj.Crmsales_nameemployee = nmemployee_db
+		obj.Crmsales_create = create
+		obj.Crmsales_update = update
+		arraobj = append(arraobj, obj)
+		msg = "Success"
+	}
+	defer row.Close()
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = arraobj
 	res.Time = time.Since(start).String()
 
 	return res, nil
@@ -184,6 +246,82 @@ func Save_crm(admin, phone, nama, status, sData string, idrecord int) (helpers.R
 		res.Record = nil
 		res.Time = time.Since(render_page).String()
 	}
+
+	return res, nil
+}
+func Save_crmsales(admin, phone, username string) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	tglnow, _ := goment.New()
+	render_page := time.Now()
+	flag := false
+
+	flag = CheckDBTwoField(configs.DB_tbl_trx_crmsales, "phone", phone, "username", username)
+	if !flag {
+		sql_insert := `
+			insert into
+			` + configs.DB_tbl_trx_crmsales + ` (
+				idcrmsales, phone, username,  
+				createcrmsales, createdatecrmsales 
+			) values (
+				$1, $2, $3, 
+				$4, $5
+			)
+		`
+		field_column := configs.DB_tbl_trx_crmsales + tglnow.Format("YYYY")
+		idrecord_counter := Get_counter(field_column)
+		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_crmsales, "INSERT",
+			tglnow.Format("YY")+strconv.Itoa(idrecord_counter), phone, username,
+			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
+
+		if flag_insert {
+			flag = true
+			msg = "Succes"
+			log.Println(msg_insert)
+		} else {
+			log.Println(msg_insert)
+		}
+	} else {
+		msg = "Duplicate Entry"
+	}
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
+
+	return res, nil
+}
+func Delete_crmsales(phone string, idrecord int) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	render_page := time.Now()
+	flag := false
+
+	flag = CheckDBTwoField(configs.DB_tbl_trx_crmsales, "idcrmsales", strconv.Itoa(idrecord), "phone", phone)
+	if flag {
+		sql_delete := `
+				DELETE FROM
+				` + configs.DB_tbl_trx_crmsales + ` 
+				WHERE idcrmsales=$1 AND phone=$2 
+			`
+		flag_delete, msg_delete := Exec_SQL(sql_delete, configs.DB_tbl_trx_crmsales, "DELETE", idrecord)
+
+		if flag_delete {
+			flag = true
+			msg = "Succes"
+			log.Println(msg_delete)
+		} else {
+			log.Println(msg_delete)
+		}
+	} else {
+		msg = "Data Not Found"
+	}
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
 
 	return res, nil
 }

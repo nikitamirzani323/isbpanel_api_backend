@@ -12,6 +12,15 @@ type Model_crm struct {
 	Crm_create    string `json:"crm_create"`
 	Crm_update    string `json:"crm_update"`
 }
+type Model_crmsales struct {
+	Crmsales_id           int    `json:"crmsales_id"`
+	Crmsales_phone        string `json:"crmsales_phone"`
+	Crmsales_namamember   string `json:"crmsales_namamember"`
+	Crmsales_username     string `json:"crmsales_username"`
+	Crmsales_nameemployee string `json:"crmsales_nameemployee"`
+	Crmsales_create       string `json:"crmsales_create"`
+	Crmsales_update       string `json:"crmsales_update"`
+}
 type Model_crmisbtv struct {
 	Crmisbtv_username  string `json:"crmisbtv_username"`
 	Crmisbtv_name      string `json:"crmisbtv_name"`
@@ -31,6 +40,9 @@ type Controller_crm struct {
 	Crm_search string `json:"crm_search"`
 	Crm_page   int    `json:"crm_page"`
 }
+type Controller_crmsales struct {
+	Crmsales_phone string `json:"crmsales_phone"`
+}
 type Controller_crmisbtv struct {
 	Crmisbtv_search string `json:"crmisbtv_search"`
 	Crmisbtv_page   int    `json:"crmisbtv_page"`
@@ -44,11 +56,24 @@ type Controller_crmsave struct {
 	Crm_name   string `json:"crm_name" validate:"required"`
 	Crm_status string `json:"crm_status" validate:"required"`
 }
-
+type Controller_crmsalessave struct {
+	Page              string `json:"page" validate:"required"`
+	Search            string `json:"search" `
+	Crm_page          int    `json:"crm_page"`
+	Crmsales_phone    string `json:"crmsales_phone" validate:"required"`
+	Crmsales_username string `json:"crmsales_username" validate:"required"`
+}
 type Controller_crmsavesource struct {
 	Page       string          `json:"page" validate:"required"`
 	Sdata      string          `json:"sdata" validate:"required"`
 	Crm_page   int             `json:"crm_page"`
 	Crm_source string          `json:"crm_source" `
 	Crm_data   json.RawMessage `json:"crm_data" validate:"required"`
+}
+type Controller_crmsalesdelete struct {
+	Page           string `json:"page" validate:"required"`
+	Search         string `json:"search" `
+	Crm_page       int    `json:"crm_page"`
+	Crmsales_id    int    `json:"crmsales_id" validate:"required"`
+	Crmsales_phone string `json:"crmsales_phone" validate:"required"`
 }

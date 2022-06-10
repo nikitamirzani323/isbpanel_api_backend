@@ -102,6 +102,48 @@ func Fetch_employeeHome() (helpers.ResponseEmployee, error) {
 
 	return res, nil
 }
+func Fetch_employeeByDepartement(iddepart string) (helpers.Response, error) {
+	var obj entities.Model_employeebydepart
+	var arraobj []entities.Model_employeebydepart
+	var res helpers.Response
+	msg := "Data Not Found"
+	con := db.CreateCon()
+	ctx := context.Background()
+	start := time.Now()
+
+	sql_select := `SELECT 
+			username , nmemployee 
+			FROM ` + configs.DB_tbl_mst_employee + `  
+			WHERE iddepartement=$1 
+			AND statusemployee='Y' 
+			ORDER BY nmemployee ASC    
+	`
+
+	row, err := con.QueryContext(ctx, sql_select, iddepart)
+	helpers.ErrorCheck(err)
+	for row.Next() {
+		var (
+			username_db, nmemployee_db string
+		)
+
+		err = row.Scan(&username_db, &nmemployee_db)
+
+		helpers.ErrorCheck(err)
+
+		obj.Employee_username = username_db
+		obj.Employee_name = nmemployee_db
+		arraobj = append(arraobj, obj)
+		msg = "Success"
+	}
+	defer row.Close()
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = arraobj
+	res.Time = time.Since(start).String()
+
+	return res, nil
+}
 func Save_employee(admin, username, password, iddepart, name, phone, status, sData, idrecord string) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"

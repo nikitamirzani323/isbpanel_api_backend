@@ -109,6 +109,30 @@ func CheckDBTwoField(table, field_1, value_1, field_2, value_2 string) bool {
 	}
 	return flag
 }
+func CheckDBThreeField(table, field_1, value_1, field_2, value_2, field_3, value_3 string) bool {
+	con := db.CreateCon()
+	ctx := context.Background()
+	flag := false
+	sql_db := `SELECT 
+					` + field_1 + ` 
+					FROM ` + table + ` 
+					WHERE ` + field_1 + ` = $1 
+					AND ` + field_2 + ` = $2 
+					AND ` + field_3 + ` = $3 
+				`
+	log.Println(sql_db)
+	row := con.QueryRowContext(ctx, sql_db, value_1, value_2, value_3)
+	switch e := row.Scan(&field_1); e {
+	case sql.ErrNoRows:
+		log.Println("CHECKDBTHREEFIELD - No rows were returned!")
+		flag = false
+	case nil:
+		flag = true
+	default:
+		flag = false
+	}
+	return flag
+}
 func Get_AdminRule(tipe, idadmin string) string {
 	con := db.CreateCon()
 	ctx := context.Background()

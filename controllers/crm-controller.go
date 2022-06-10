@@ -15,6 +15,7 @@ import (
 )
 
 const Fieldcrm_home_redis = "LISTCRM_BACKEND_ISBPANEL"
+const Fieldcrmsales_home_redis = "LISTCRMSALES_BACKEND_ISBPANEL"
 const Fieldcrmisbtv_home_redis = "LISTCRMISBTV_BACKEND_ISBPANEL"
 const Fieldcrmduniafilm_home_redis = "LISTCRMDUNIAFILM_BACKEND_ISBPANEL"
 
@@ -47,8 +48,8 @@ func Crmhome(c *fiber.Ctx) error {
 		})
 	}
 	if client.Crm_search != "" {
-		val_news := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + strconv.Itoa(client.Crm_page) + "_" + client.Crm_search)
-		log.Printf("Redis Delete BACKEND NEWS : %d", val_news)
+		val_crm := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + strconv.Itoa(client.Crm_page) + "_" + client.Crm_search)
+		log.Printf("Redis Delete BACKEND CRM : %d", val_crm)
 	}
 	var obj entities.Model_crm
 	var arraobj []entities.Model_crm
@@ -94,6 +95,87 @@ func Crmhome(c *fiber.Ctx) error {
 		return c.JSON(result)
 	} else {
 		log.Println("CRM  CACHE")
+		return c.JSON(fiber.Map{
+			"status":      fiber.StatusOK,
+			"message":     "Success",
+			"record":      arraobj,
+			"perpage":     perpage_RD,
+			"totalrecord": totalrecord_RD,
+			"time":        time.Since(render_page).String(),
+		})
+	}
+}
+func Crmsales(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_crmsales)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+
+	var obj entities.Model_crmsales
+	var arraobj []entities.Model_crmsales
+	render_page := time.Now()
+	resultredis, flag := helpers.GetRedis(Fieldcrmsales_home_redis + "_" + client.Crmsales_phone)
+	jsonredis := []byte(resultredis)
+	perpage_RD, _ := jsonparser.GetInt(jsonredis, "perpage")
+	totalrecord_RD, _ := jsonparser.GetInt(jsonredis, "totalrecord")
+	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
+	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		crmsales_id, _ := jsonparser.GetInt(value, "crmsales_id")
+		crmsales_phone, _ := jsonparser.GetString(value, "crmsales_phone")
+		crmsales_namamember, _ := jsonparser.GetString(value, "crmsales_namamember")
+		crmsales_username, _ := jsonparser.GetString(value, "crmsales_username")
+		crmsales_nameemployee, _ := jsonparser.GetString(value, "crmsales_nameemployee")
+		crmsales_create, _ := jsonparser.GetString(value, "crmsales_create")
+		crmsales_update, _ := jsonparser.GetString(value, "crmsales_update")
+
+		obj.Crmsales_id = int(crmsales_id)
+		obj.Crmsales_phone = crmsales_phone
+		obj.Crmsales_namamember = crmsales_namamember
+		obj.Crmsales_username = crmsales_username
+		obj.Crmsales_nameemployee = crmsales_nameemployee
+		obj.Crmsales_create = crmsales_create
+		obj.Crmsales_update = crmsales_update
+		arraobj = append(arraobj, obj)
+	})
+
+	if !flag {
+		result, err := models.Fetch_crmsales(client.Crmsales_phone)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"status":  fiber.StatusBadRequest,
+				"message": err.Error(),
+				"record":  nil,
+			})
+		}
+		helpers.SetRedis(Fieldcrmsales_home_redis+"_"+client.Crmsales_phone, result, 60*time.Minute)
+		log.Println("CRM SALES  MYSQL")
+		return c.JSON(result)
+	} else {
+		log.Println("CRM SALES  CACHE")
 		return c.JSON(fiber.Map{
 			"status":      fiber.StatusOK,
 			"message":     "Success",
@@ -311,9 +393,116 @@ func CrmSave(c *fiber.Ctx) error {
 		})
 	}
 
-	val_master := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + strconv.Itoa(client.Crm_page) + "_")
-	log.Printf("Redis Delete BACKEND CRM : %d", val_master)
+	_deleteredis_crm(client.Crm_page, "", "")
 	return c.JSON(result)
+}
+func CrmSalesSave(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_crmsalessave)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+	user := c.Locals("jwt").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	temp_decp := helpers.Decryption(name)
+	client_admin, _ := helpers.Parsing_Decry(temp_decp, "==")
+
+	//admin, phone, username string)
+	result, err := models.Save_crmsales(
+		client_admin,
+		client.Crmsales_phone, client.Crmsales_username)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+	_deleteredis_crm(client.Crm_page, client.Crmsales_phone, client.Search)
+	return c.JSON(result)
+}
+func CrmSalesdelete(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_crmsalesdelete)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+	user := c.Locals("jwt").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	temp_decp := helpers.Decryption(name)
+	_, idruleadmin := helpers.Parsing_Decry(temp_decp, "==")
+	log.Println("RULE :" + client.Page)
+	ruleadmin := models.Get_AdminRule("ruleadmingroup", idruleadmin)
+	flag := models.Get_listitemsearch(ruleadmin, ",", client.Page)
+
+	if !flag {
+		c.Status(fiber.StatusForbidden)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusForbidden,
+			"message": "Anda tidak bisa akses halaman ini",
+			"record":  nil,
+		})
+	} else {
+		//phone string, idrecord int
+		result, err := models.Delete_crmsales(client.Crmsales_phone, client.Crmsales_id)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"status":  fiber.StatusBadRequest,
+				"message": err.Error(),
+				"record":  nil,
+			})
+		}
+		_deleteredis_crm(client.Crm_page, client.Crmsales_phone, client.Search)
+		return c.JSON(result)
+	}
 }
 func CrmSavesource(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
@@ -364,4 +553,11 @@ func CrmSavesource(c *fiber.Ctx) error {
 	val_master := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + strconv.Itoa(client.Crm_page) + "_")
 	log.Printf("Redis Delete BACKEND CRM : %d", val_master)
 	return c.JSON(result)
+}
+func _deleteredis_crm(page int, phone, search string) {
+	val_master := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + strconv.Itoa(page) + "_" + search)
+	log.Printf("Redis Delete BACKEND CRM : %d", val_master)
+
+	val_crmsales := helpers.DeleteRedis(Fieldcrmsales_home_redis + "_" + phone)
+	log.Printf("Redis Delete BACKEND CRM SALES : %d", val_crmsales)
 }

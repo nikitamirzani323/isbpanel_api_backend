@@ -32,6 +32,7 @@ const (
 	DB_tbl_trx_comment         string = "tbl_trx_comment"
 	DB_tbl_trx_usersales       string = "tbl_trx_usersales"
 	DB_tbl_trx_albumcloudflare string = "tbl_trx_albumcloudflare"
+	DB_tbl_trx_crmsales        string = "tbl_trx_usersales_sales"
 	DB_VIEW_MEMBER_DUNIAFILM   string = "VIEW_MEMBER_DUNIAFILM"
 	DB_VIEW_MOVIE              string = "VIEW_MOVIE"
 	DB_VIEW_MOVIESERIES        string = "VIEW_MOVIESERIES"

@@ -75,8 +75,31 @@ func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
 		err = row.Scan(
 			&idusersales_db, &phone_db, &nama_db, &source_db, &statususersales_db, &createusersales_db,
 			&createdateusersales_db, &updateusersales_db, &updatedateusersales_db)
-
 		helpers.ErrorCheck(err)
+
+		sql_select_crmsales := `SELECT 
+				A.username, B.nmemployee    
+				FROM ` + configs.DB_tbl_trx_crmsales + ` as A  
+				JOIN ` + configs.DB_tbl_mst_employee + ` as B ON B.username = A.username   
+				WHERE A.phone = $1 
+				ORDER BY B.nmemployee ASC    
+		`
+
+		var obj_crmsales entities.Model_crmsales_simple
+		var arraobj_crmsales []entities.Model_crmsales_simple
+		rowcrmsales, errcrmsales := con.QueryContext(ctx, sql_select_crmsales, phone_db)
+		helpers.ErrorCheck(errcrmsales)
+		for rowcrmsales.Next() {
+			var (
+				username_db, nmemployee_db string
+			)
+			errcrmsales = rowcrmsales.Scan(&username_db, &nmemployee_db)
+			helpers.ErrorCheck(errcrmsales)
+
+			obj_crmsales.Crmsales_username = username_db
+			obj_crmsales.Crmsales_nameemployee = nmemployee_db
+			arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
+		}
 
 		create := ""
 		update := ""
@@ -99,6 +122,7 @@ func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
 		obj.Crm_phone = phone_db
 		obj.Crm_name = nama_db
 		obj.Crm_source = source_db
+		obj.Crm_pic = arraobj_crmsales
 		obj.Crm_status = statususersales_db
 		obj.Crm_statuscss = statuscss
 		obj.Crm_create = create
@@ -305,7 +329,7 @@ func Delete_crmsales(phone string, idrecord int) (helpers.Response, error) {
 				` + configs.DB_tbl_trx_crmsales + ` 
 				WHERE idcrmsales=$1 AND phone=$2 
 			`
-		flag_delete, msg_delete := Exec_SQL(sql_delete, configs.DB_tbl_trx_crmsales, "DELETE", idrecord)
+		flag_delete, msg_delete := Exec_SQL(sql_delete, configs.DB_tbl_trx_crmsales, "DELETE", idrecord, phone)
 
 		if flag_delete {
 			flag = true

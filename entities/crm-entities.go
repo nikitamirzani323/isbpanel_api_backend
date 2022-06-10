@@ -3,14 +3,19 @@ package entities
 import "encoding/json"
 
 type Model_crm struct {
-	Crm_id        int    `json:"crm_id"`
-	Crm_phone     string `json:"crm_phone"`
-	Crm_name      string `json:"crm_name"`
-	Crm_source    string `json:"crm_source"`
-	Crm_status    string `json:"crm_status"`
-	Crm_statuscss string `json:"crm_statuscss"`
-	Crm_create    string `json:"crm_create"`
-	Crm_update    string `json:"crm_update"`
+	Crm_id        int         `json:"crm_id"`
+	Crm_phone     string      `json:"crm_phone"`
+	Crm_name      string      `json:"crm_name"`
+	Crm_pic       interface{} `json:"crm_pic"`
+	Crm_source    string      `json:"crm_source"`
+	Crm_status    string      `json:"crm_status"`
+	Crm_statuscss string      `json:"crm_statuscss"`
+	Crm_create    string      `json:"crm_create"`
+	Crm_update    string      `json:"crm_update"`
+}
+type Model_crmsales_simple struct {
+	Crmsales_username     string `json:"crmsales_username"`
+	Crmsales_nameemployee string `json:"crmsales_nameemployee"`
 }
 type Model_crmsales struct {
 	Crmsales_id           int    `json:"crmsales_id"`

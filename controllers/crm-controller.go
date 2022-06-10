@@ -69,10 +69,23 @@ func Crmhome(c *fiber.Ctx) error {
 		crm_create, _ := jsonparser.GetString(value, "crm_create")
 		crm_update, _ := jsonparser.GetString(value, "crm_update")
 
+		var obj_crmsales entities.Model_crmsales_simple
+		var arraobj_crmsales []entities.Model_crmsales_simple
+		crm_pic, _, _, _ := jsonparser.Get(value, "crm_pic")
+		jsonparser.ArrayEach(crm_pic, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			crmsales_username, _ := jsonparser.GetString(value, "crmsales_username")
+			crmsales_nameemployee, _ := jsonparser.GetString(value, "crmsales_nameemployee")
+
+			obj_crmsales.Crmsales_username = crmsales_username
+			obj_crmsales.Crmsales_nameemployee = crmsales_nameemployee
+			arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
+		})
+
 		obj.Crm_id = int(crm_id)
 		obj.Crm_phone = crm_phone
 		obj.Crm_name = crm_name
 		obj.Crm_source = crm_source
+		obj.Crm_pic = arraobj_crmsales
 		obj.Crm_status = crm_status
 		obj.Crm_statuscss = crm_statuscss
 		obj.Crm_create = crm_create

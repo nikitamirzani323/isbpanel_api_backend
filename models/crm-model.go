@@ -33,7 +33,7 @@ func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
 	sql_selectcount += ""
 	sql_selectcount += "SELECT "
 	sql_selectcount += "COUNT(idusersales) as totalmember  "
-	sql_selectcount += "FROM " + configs.DB_tbl_trx_usersales + "  "
+	sql_selectcount += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
 	if search != "" {
 		sql_selectcount += "WHERE LOWER(phone) LIKE '%" + strings.ToLower(search) + "%' "
 		sql_selectcount += "OR LOWER(nama) LIKE '%" + strings.ToLower(search) + "%' "
@@ -54,7 +54,7 @@ func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
 	sql_select += "source , statususersales,  "
 	sql_select += "createusersales, to_char(COALESCE(createdateusersales,NOW()), 'YYYY-MM-DD HH24:MI:SS'), "
 	sql_select += "updateusersales, to_char(COALESCE(updatedateusersales,NOW()) , 'YYYY-MM-DD HH24:MI:SS')"
-	sql_select += "FROM " + configs.DB_tbl_trx_usersales + "  "
+	sql_select += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
 	if search == "" {
 		sql_select += "ORDER BY createdateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
 	} else {
@@ -84,7 +84,7 @@ func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
 				WHERE A.phone = $1 
 				ORDER BY B.nmemployee ASC    
 		`
-
+		total_pic := 0
 		var obj_crmsales entities.Model_crmsales_simple
 		var arraobj_crmsales []entities.Model_crmsales_simple
 		rowcrmsales, errcrmsales := con.QueryContext(ctx, sql_select_crmsales, phone_db)
@@ -95,7 +95,7 @@ func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
 			)
 			errcrmsales = rowcrmsales.Scan(&username_db, &nmemployee_db)
 			helpers.ErrorCheck(errcrmsales)
-
+			total_pic = total_pic + 1
 			obj_crmsales.Crmsales_username = username_db
 			obj_crmsales.Crmsales_nameemployee = nmemployee_db
 			arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
@@ -122,6 +122,134 @@ func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
 		obj.Crm_phone = phone_db
 		obj.Crm_name = nama_db
 		obj.Crm_source = source_db
+		obj.Crm_totalpic = total_pic
+		obj.Crm_pic = arraobj_crmsales
+		obj.Crm_status = statususersales_db
+		obj.Crm_statuscss = statuscss
+		obj.Crm_create = create
+		obj.Crm_update = update
+		arraobj = append(arraobj, obj)
+		msg = "Success"
+	}
+	defer row.Close()
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = arraobj
+	res.Perpage = perpage
+	res.Totalrecord = totalrecord
+	res.Time = time.Since(start).String()
+
+	return res, nil
+}
+func Fetch_crmprocess(search string, page int) (helpers.Responsemovie, error) {
+	var obj entities.Model_crm
+	var arraobj []entities.Model_crm
+	var res helpers.Responsemovie
+	msg := "Data Not Found"
+	con := db.CreateCon()
+	ctx := context.Background()
+	start := time.Now()
+
+	perpage := 250
+	totalrecord := 0
+	offset := page
+	sql_selectcount := ""
+	sql_selectcount += ""
+	sql_selectcount += "SELECT "
+	sql_selectcount += "COUNT(idusersales) as totalmember  "
+	sql_selectcount += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
+	if search != "" {
+		sql_selectcount += "WHERE LOWER(phone) LIKE '%" + strings.ToLower(search) + "%' "
+		sql_selectcount += "OR LOWER(nama) LIKE '%" + strings.ToLower(search) + "%' "
+	}
+
+	row_selectcount := con.QueryRowContext(ctx, sql_selectcount)
+	switch e_selectcount := row_selectcount.Scan(&totalrecord); e_selectcount {
+	case sql.ErrNoRows:
+	case nil:
+	default:
+		helpers.ErrorCheck(e_selectcount)
+	}
+
+	sql_select := ""
+	sql_select += ""
+	sql_select += "SELECT "
+	sql_select += "idusersales , phone, nama, "
+	sql_select += "source , statususersales,  "
+	sql_select += "createusersales, to_char(COALESCE(createdateusersales,NOW()), 'YYYY-MM-DD HH24:MI:SS'), "
+	sql_select += "updateusersales, to_char(COALESCE(updatedateusersales,NOW()) , 'YYYY-MM-DD HH24:MI:SS')"
+	sql_select += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
+	if search == "" {
+		sql_select += "ORDER BY createdateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
+	} else {
+		sql_select += "WHERE LOWER(name) LIKE '%" + strings.ToLower(search) + "%' "
+		sql_select += "OR LOWER(phone) LIKE '%" + strings.ToLower(search) + "%' "
+		sql_select += "ORDER BY createdateusersales DESC  LIMIT " + strconv.Itoa(perpage)
+	}
+
+	row, err := con.QueryContext(ctx, sql_select)
+	helpers.ErrorCheck(err)
+	for row.Next() {
+		var (
+			idusersales_db                                                                         int
+			phone_db, nama_db, source_db, statususersales_db                                       string
+			createusersales_db, createdateusersales_db, updateusersales_db, updatedateusersales_db string
+		)
+
+		err = row.Scan(
+			&idusersales_db, &phone_db, &nama_db, &source_db, &statususersales_db, &createusersales_db,
+			&createdateusersales_db, &updateusersales_db, &updatedateusersales_db)
+		helpers.ErrorCheck(err)
+
+		sql_select_crmsales := `SELECT 
+				A.username, B.nmemployee    
+				FROM ` + configs.DB_tbl_trx_crmsales + ` as A  
+				JOIN ` + configs.DB_tbl_mst_employee + ` as B ON B.username = A.username   
+				WHERE A.phone = $1 
+				ORDER BY B.nmemployee ASC    
+		`
+		total_pic := 0
+		var obj_crmsales entities.Model_crmsales_simple
+		var arraobj_crmsales []entities.Model_crmsales_simple
+		rowcrmsales, errcrmsales := con.QueryContext(ctx, sql_select_crmsales, phone_db)
+		helpers.ErrorCheck(errcrmsales)
+		for rowcrmsales.Next() {
+			var (
+				username_db, nmemployee_db string
+			)
+			errcrmsales = rowcrmsales.Scan(&username_db, &nmemployee_db)
+			helpers.ErrorCheck(errcrmsales)
+			total_pic = total_pic + 1
+			obj_crmsales.Crmsales_username = username_db
+			obj_crmsales.Crmsales_nameemployee = nmemployee_db
+			arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
+		}
+
+		create := ""
+		update := ""
+		statuscss := ""
+		if createusersales_db != "" {
+			create = createusersales_db + ", " + createdateusersales_db
+		}
+		if updateusersales_db != "" {
+			update = updateusersales_db + ", " + updatedateusersales_db
+		}
+		switch statususersales_db {
+		case "NEW":
+			statuscss = configs.STATUS_NEW
+		case "PROCESS":
+			statuscss = configs.STATUS_RUNNING
+		case "VALID":
+			statuscss = configs.STATUS_COMPLETE
+		case "INVALID":
+			statuscss = configs.STATUS_CANCEL
+		}
+		obj.Crm_id = idusersales_db
+		obj.Crm_phone = phone_db
+		obj.Crm_name = nama_db
+		obj.Crm_source = source_db
+		obj.Crm_totalpic = total_pic
 		obj.Crm_pic = arraobj_crmsales
 		obj.Crm_status = statususersales_db
 		obj.Crm_statuscss = statuscss
@@ -273,6 +401,37 @@ func Save_crm(admin, phone, nama, status, sData string, idrecord int) (helpers.R
 
 	return res, nil
 }
+func Save_crmstatus(admin, status string, idrecord int) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	tglnow, _ := goment.New()
+	render_page := time.Now()
+
+	sql_update := `
+		UPDATE 
+		` + configs.DB_tbl_trx_usersales + `  
+		SET statususersales=$1, 
+		updateusersales=$2, updatedateusersales=$3 
+		WHERE idusersales =$4 
+	`
+
+	flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_usersales, "UPDATE",
+		status, admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
+
+	if flag_update {
+		msg = "Succes"
+		log.Println(msg_update)
+	} else {
+		log.Println(msg_update)
+	}
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
+
+	return res, nil
+}
 func Save_crmsales(admin, phone, username string) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"
@@ -354,7 +513,6 @@ func Save_crmsource(admin, datasource, source, sData string) (helpers.Response, 
 	msg := "Failed"
 	tglnow, _ := goment.New()
 	render_page := time.Now()
-	flag := false
 
 	if sData == "New" {
 		json := []byte(datasource)
@@ -382,7 +540,6 @@ func Save_crmsource(admin, datasource, source, sData string) (helpers.Response, 
 					admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 
 				if flag_insert {
-					flag = true
 					msg = "Succes"
 					log.Println(msg_insert)
 				} else {
@@ -392,17 +549,10 @@ func Save_crmsource(admin, datasource, source, sData string) (helpers.Response, 
 		})
 	}
 
-	if flag {
-		res.Status = fiber.StatusOK
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	} else {
-		res.Status = fiber.StatusBadRequest
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	}
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
 
 	return res, nil
 }

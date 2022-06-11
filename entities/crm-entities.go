@@ -7,6 +7,7 @@ type Model_crm struct {
 	Crm_phone     string      `json:"crm_phone"`
 	Crm_name      string      `json:"crm_name"`
 	Crm_pic       interface{} `json:"crm_pic"`
+	Crm_totalpic  int         `json:"crm_totalpic"`
 	Crm_source    string      `json:"crm_source"`
 	Crm_status    string      `json:"crm_status"`
 	Crm_statuscss string      `json:"crm_statuscss"`
@@ -59,6 +60,12 @@ type Controller_crmsave struct {
 	Crm_id     int    `json:"crm_id"`
 	Crm_phone  string `json:"crm_phone" validate:"required"`
 	Crm_name   string `json:"crm_name" validate:"required"`
+	Crm_status string `json:"crm_status" validate:"required"`
+}
+type Controller_crmstatussave struct {
+	Page       string `json:"page" validate:"required"`
+	Crm_page   int    `json:"crm_page"`
+	Crm_id     int    `json:"crm_id"`
 	Crm_status string `json:"crm_status" validate:"required"`
 }
 type Controller_crmsalessave struct {

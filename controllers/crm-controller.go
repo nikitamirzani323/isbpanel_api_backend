@@ -64,6 +64,7 @@ func Crmhome(c *fiber.Ctx) error {
 		crm_phone, _ := jsonparser.GetString(value, "crm_phone")
 		crm_name, _ := jsonparser.GetString(value, "crm_name")
 		crm_source, _ := jsonparser.GetString(value, "crm_source")
+		crm_totalpic, _ := jsonparser.GetInt(value, "crm_totalpic")
 		crm_status, _ := jsonparser.GetString(value, "crm_status")
 		crm_statuscss, _ := jsonparser.GetString(value, "crm_statuscss")
 		crm_create, _ := jsonparser.GetString(value, "crm_create")
@@ -85,6 +86,7 @@ func Crmhome(c *fiber.Ctx) error {
 		obj.Crm_phone = crm_phone
 		obj.Crm_name = crm_name
 		obj.Crm_source = crm_source
+		obj.Crm_totalpic = int(crm_totalpic)
 		obj.Crm_pic = arraobj_crmsales
 		obj.Crm_status = crm_status
 		obj.Crm_statuscss = crm_statuscss
@@ -397,6 +399,55 @@ func CrmSave(c *fiber.Ctx) error {
 	result, err := models.Save_crm(
 		client_admin,
 		client.Crm_phone, client.Crm_name, client.Crm_status, client.Sdata, client.Crm_id)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	_deleteredis_crm(client.Crm_page, "", "")
+	return c.JSON(result)
+}
+func CrmSavestatus(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_crmstatussave)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+	user := c.Locals("jwt").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	temp_decp := helpers.Decryption(name)
+	client_admin, _ := helpers.Parsing_Decry(temp_decp, "==")
+
+	result, err := models.Save_crmstatus(
+		client_admin,
+		client.Crm_status, client.Crm_id)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{

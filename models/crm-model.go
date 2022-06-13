@@ -100,11 +100,11 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		helpers.ErrorCheck(err)
 
 		sql_select_crmsales := `SELECT 
-				A.username, B.nmemployee    
+				A.username, B.nmemployee, A.statuscrmsales_dua, A.notecrmsales     
 				FROM ` + configs.DB_tbl_trx_crmsales + ` as A  
 				JOIN ` + configs.DB_tbl_mst_employee + ` as B ON B.username = A.username   
 				WHERE A.phone = $1 
-				ORDER BY B.nmemployee ASC    
+				ORDER BY A.createdatecrmsales ASC    
 		`
 		total_pic := 0
 		var obj_crmsales entities.Model_crmsales_simple
@@ -113,13 +113,15 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		helpers.ErrorCheck(errcrmsales)
 		for rowcrmsales.Next() {
 			var (
-				username_db, nmemployee_db string
+				username_db, nmemployee_db, statuscrmsales_dua_db, notecrmsales_db string
 			)
-			errcrmsales = rowcrmsales.Scan(&username_db, &nmemployee_db)
+			errcrmsales = rowcrmsales.Scan(&username_db, &nmemployee_db, &statuscrmsales_dua_db, &notecrmsales_db)
 			helpers.ErrorCheck(errcrmsales)
 			total_pic = total_pic + 1
 			obj_crmsales.Crmsales_username = username_db
 			obj_crmsales.Crmsales_nameemployee = nmemployee_db
+			obj_crmsales.Crmsales_status = statuscrmsales_dua_db
+			obj_crmsales.Crmsales_note = notecrmsales_db
 			arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
 		}
 

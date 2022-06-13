@@ -17,6 +17,8 @@ type Model_crm struct {
 type Model_crmsales_simple struct {
 	Crmsales_username     string `json:"crmsales_username"`
 	Crmsales_nameemployee string `json:"crmsales_nameemployee"`
+	Crmsales_status       string `json:"crmsales_status"`
+	Crmsales_note         string `json:"crmsales_note"`
 }
 type Model_crmsales struct {
 	Crmsales_id           int    `json:"crmsales_id"`

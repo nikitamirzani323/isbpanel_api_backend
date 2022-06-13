@@ -65,24 +65,40 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 	sql_select += "source , statususersales,  "
 	sql_select += "createusersales, to_char(COALESCE(createdateusersales,NOW()), 'YYYY-MM-DD HH24:MI:SS'), "
 	sql_select += "updateusersales, to_char(COALESCE(updatedateusersales,NOW()) , 'YYYY-MM-DD HH24:MI:SS') "
-	if status == "NEW" {
+	switch status {
+	case "PROCESS":
+		sql_select += "FROM " + configs.DB_VIEW_SALES_PROCESS + "  "
+	case "VALID":
+		sql_select += "FROM " + configs.DB_VIEW_SALES_VALID + "  "
+	case "INVALID":
+		sql_select += "FROM " + configs.DB_VIEW_SALES_INVALID + "  "
+	default:
 		sql_select += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
 	}
-	if status == "PROCESS" {
-		sql_select += "FROM " + configs.DB_VIEW_SALES_PROCESS + "  "
-	}
-	if status == "VALID" {
-		sql_select += "FROM " + configs.DB_VIEW_SALES_VALID + "  "
-	}
-	if status == "INVALID" {
-		sql_select += "FROM " + configs.DB_VIEW_SALES_INVALID + "  "
-	}
 	if search == "" {
-		sql_select += "ORDER BY createdateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
+		switch status {
+		case "PROCESS":
+			sql_select += "ORDER BY updatedateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
+		case "VALID":
+			sql_select += "ORDER BY updatedateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
+		case "INVALID":
+			sql_select += "ORDER BY updatedateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
+		default:
+			sql_select += "ORDER BY createdateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
+		}
 	} else {
 		sql_select += "WHERE LOWER(name) LIKE '%" + strings.ToLower(search) + "%' "
 		sql_select += "OR LOWER(phone) LIKE '%" + strings.ToLower(search) + "%' "
-		sql_select += "ORDER BY createdateusersales DESC  LIMIT " + strconv.Itoa(perpage)
+		switch status {
+		case "PROCESS":
+			sql_select += "ORDER BY updatedateusersales DESC  LIMIT " + strconv.Itoa(perpage)
+		case "VALID":
+			sql_select += "ORDER BY updatedateusersales DESC  LIMIT " + strconv.Itoa(perpage)
+		case "INVALID":
+			sql_select += "ORDER BY updatedateusersales DESC  LIMIT " + strconv.Itoa(perpage)
+		default:
+			sql_select += "ORDER BY createdateusersales DESC  LIMIT " + strconv.Itoa(perpage)
+		}
 	}
 
 	row, err := con.QueryContext(ctx, sql_select)
@@ -104,7 +120,7 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 				FROM ` + configs.DB_tbl_trx_crmsales + ` as A  
 				JOIN ` + configs.DB_tbl_mst_employee + ` as B ON B.username = A.username   
 				WHERE A.phone = $1 
-				ORDER BY A.createdatecrmsales ASC    
+				ORDER BY A.updatedatecrmsales DESC     
 		`
 		total_pic := 0
 		var obj_crmsales entities.Model_crmsales_simple
@@ -217,6 +233,58 @@ func Fetch_crmsales(member_phone string) (helpers.Response, error) {
 		obj.Crmsales_nameemployee = nmemployee_db
 		obj.Crmsales_create = create
 		obj.Crmsales_update = update
+		arraobj = append(arraobj, obj)
+		msg = "Success"
+	}
+	defer row.Close()
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = arraobj
+	res.Time = time.Since(start).String()
+
+	return res, nil
+}
+func Fetch_crmdeposit(idcrmsales int) (helpers.Response, error) {
+	var obj entities.Model_crmdeposit
+	var arraobj []entities.Model_crmdeposit
+	var res helpers.Response
+	msg := "Data Not Found"
+	con := db.CreateCon()
+	ctx := context.Background()
+	start := time.Now()
+
+	sql_select := `SELECT 
+			B.nmwebagen , A.deposit, A.iduseragen,   
+			A.createusersalesdeposit, to_char(COALESCE(A.createdateusersalesdeposit,now()), 'YYYY-MM-DD HH24:MI:SS') 
+			FROM ` + configs.DB_tbl_trx_usersales_deposit + ` as A  
+			JOIN ` + configs.DB_tbl_mst_websiteagen + ` as B ON B.idwebagen = A.idwebagen   
+			WHERE A.idcrmsales = $1 
+			ORDER BY A.createdateusersalesdeposit DESC   
+	`
+
+	row, err := con.QueryContext(ctx, sql_select, idcrmsales)
+	helpers.ErrorCheck(err)
+	for row.Next() {
+		var (
+			deposit_db                                               float32
+			nmwebagen_db, iduseragen_db                              string
+			createusersalesdeposit_db, createdateusersalesdeposit_db string
+		)
+
+		err = row.Scan(&nmwebagen_db, &deposit_db, &iduseragen_db,
+			&createusersalesdeposit_db, &createdateusersalesdeposit_db)
+
+		helpers.ErrorCheck(err)
+		create := ""
+		if createusersalesdeposit_db != "" {
+			create = createusersalesdeposit_db + ", " + createdateusersalesdeposit_db
+		}
+
+		obj.Crmsdeposit_nmwebagen = nmwebagen_db
+		obj.Crmsdeposit_deposit = deposit_db
+		obj.Crmsdeposit_iduseragen = iduseragen_db
+		obj.Crmsdeposit_create = create
 		arraobj = append(arraobj, obj)
 		msg = "Success"
 	}

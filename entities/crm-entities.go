@@ -29,6 +29,12 @@ type Model_crmsales struct {
 	Crmsales_create       string `json:"crmsales_create"`
 	Crmsales_update       string `json:"crmsales_update"`
 }
+type Model_crmdeposit struct {
+	Crmsdeposit_nmwebagen  string  `json:"crmdeposit_nmwebagen"`
+	Crmsdeposit_deposit    float32 `json:"crmdeposit_deposit"`
+	Crmsdeposit_iduseragen string  `json:"crmdeposit_iduseragen"`
+	Crmsdeposit_create     string  `json:"crmdeposit_create"`
+}
 type Model_crmisbtv struct {
 	Crmisbtv_username  string `json:"crmisbtv_username"`
 	Crmisbtv_name      string `json:"crmisbtv_name"`
@@ -51,6 +57,9 @@ type Controller_crm struct {
 }
 type Controller_crmsales struct {
 	Crmsales_phone string `json:"crmsales_phone"`
+}
+type Controller_crmdeposit struct {
+	Crmsales_idcrmsales int `json:"crmsales_idcrmsales" validate:"required"`
 }
 type Controller_crmisbtv struct {
 	Crmisbtv_search string `json:"crmisbtv_search"`

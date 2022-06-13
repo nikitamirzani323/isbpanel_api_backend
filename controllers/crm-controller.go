@@ -16,6 +16,7 @@ import (
 
 const Fieldcrm_home_redis = "LISTCRM_BACKEND_ISBPANEL"
 const Fieldcrmsales_home_redis = "LISTCRMSALES_BACKEND_ISBPANEL"
+const Fieldcrmdeposit_home_redis = "LISTCRMDEPOSIT_BACKEND_ISBPANEL"
 const Fieldcrmisbtv_home_redis = "LISTCRMISBTV_BACKEND_ISBPANEL"
 const Fieldcrmduniafilm_home_redis = "LISTCRMDUNIAFILM_BACKEND_ISBPANEL"
 const Fieldcrm_sales_redis = "LISTCRM_SALES_ISBPANEL"
@@ -196,6 +197,81 @@ func Crmsales(c *fiber.Ctx) error {
 		return c.JSON(result)
 	} else {
 		log.Println("CRM SALES  CACHE")
+		return c.JSON(fiber.Map{
+			"status":      fiber.StatusOK,
+			"message":     "Success",
+			"record":      arraobj,
+			"perpage":     perpage_RD,
+			"totalrecord": totalrecord_RD,
+			"time":        time.Since(render_page).String(),
+		})
+	}
+}
+func Crmdeposit(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_crmdeposit)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+
+	var obj entities.Model_crmdeposit
+	var arraobj []entities.Model_crmdeposit
+	render_page := time.Now()
+	resultredis, flag := helpers.GetRedis(Fieldcrmdeposit_home_redis + "_" + strconv.Itoa(client.Crmsales_idcrmsales))
+	jsonredis := []byte(resultredis)
+	perpage_RD, _ := jsonparser.GetInt(jsonredis, "perpage")
+	totalrecord_RD, _ := jsonparser.GetInt(jsonredis, "totalrecord")
+	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
+	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		crmdeposit_nmwebagen, _ := jsonparser.GetString(value, "crmdeposit_nmwebagen")
+		crmdeposit_deposit, _ := jsonparser.GetFloat(value, "crmdeposit_deposit")
+		crmdeposit_iduseragen, _ := jsonparser.GetString(value, "crmdeposit_iduseragen")
+		crmdeposit_create, _ := jsonparser.GetString(value, "crmdeposit_create")
+
+		obj.Crmsdeposit_nmwebagen = crmdeposit_nmwebagen
+		obj.Crmsdeposit_deposit = float32(crmdeposit_deposit)
+		obj.Crmsdeposit_iduseragen = crmdeposit_iduseragen
+		obj.Crmsdeposit_create = crmdeposit_create
+		arraobj = append(arraobj, obj)
+	})
+
+	if !flag {
+		result, err := models.Fetch_crmdeposit(client.Crmsales_idcrmsales)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"status":  fiber.StatusBadRequest,
+				"message": err.Error(),
+				"record":  nil,
+			})
+		}
+		helpers.SetRedis(Fieldcrmdeposit_home_redis+"_"+strconv.Itoa(client.Crmsales_idcrmsales), result, 60*time.Minute)
+		log.Println("CRM DEPOSIT  MYSQL")
+		return c.JSON(result)
+	} else {
+		log.Println("CRM DEPOSIT  CACHE")
 		return c.JSON(fiber.Map{
 			"status":      fiber.StatusOK,
 			"message":     "Success",

@@ -43,6 +43,7 @@ type Model_crmduniafilm struct {
 }
 
 type Controller_crm struct {
+	Crm_status string `json:"crm_status"`
 	Crm_search string `json:"crm_search"`
 	Crm_page   int    `json:"crm_page"`
 }

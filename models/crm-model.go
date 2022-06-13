@@ -17,7 +17,7 @@ import (
 	"github.com/nleeper/goment"
 )
 
-func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
+func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 	var obj entities.Model_crm
 	var arraobj []entities.Model_crm
 	var res helpers.Responsemovie
@@ -33,7 +33,18 @@ func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
 	sql_selectcount += ""
 	sql_selectcount += "SELECT "
 	sql_selectcount += "COUNT(idusersales) as totalmember  "
-	sql_selectcount += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
+	if status == "NEW" {
+		sql_selectcount += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
+	}
+	if status == "PROCESS" {
+		sql_selectcount += "FROM " + configs.DB_VIEW_SALES_PROCESS + "  "
+	}
+	if status == "VALID" {
+		sql_selectcount += "FROM " + configs.DB_VIEW_SALES_VALID + "  "
+	}
+	if status == "INVALID" {
+		sql_selectcount += "FROM " + configs.DB_VIEW_SALES_INVALID + "  "
+	}
 	if search != "" {
 		sql_selectcount += "WHERE LOWER(phone) LIKE '%" + strings.ToLower(search) + "%' "
 		sql_selectcount += "OR LOWER(nama) LIKE '%" + strings.ToLower(search) + "%' "
@@ -53,133 +64,19 @@ func Fetch_crm(search string, page int) (helpers.Responsemovie, error) {
 	sql_select += "idusersales , phone, nama, "
 	sql_select += "source , statususersales,  "
 	sql_select += "createusersales, to_char(COALESCE(createdateusersales,NOW()), 'YYYY-MM-DD HH24:MI:SS'), "
-	sql_select += "updateusersales, to_char(COALESCE(updatedateusersales,NOW()) , 'YYYY-MM-DD HH24:MI:SS')"
-	sql_select += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
-	if search == "" {
-		sql_select += "ORDER BY createdateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
-	} else {
-		sql_select += "WHERE LOWER(name) LIKE '%" + strings.ToLower(search) + "%' "
-		sql_select += "OR LOWER(phone) LIKE '%" + strings.ToLower(search) + "%' "
-		sql_select += "ORDER BY createdateusersales DESC  LIMIT " + strconv.Itoa(perpage)
+	sql_select += "updateusersales, to_char(COALESCE(updatedateusersales,NOW()) , 'YYYY-MM-DD HH24:MI:SS') "
+	if status == "NEW" {
+		sql_select += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
 	}
-
-	row, err := con.QueryContext(ctx, sql_select)
-	helpers.ErrorCheck(err)
-	for row.Next() {
-		var (
-			idusersales_db                                                                         int
-			phone_db, nama_db, source_db, statususersales_db                                       string
-			createusersales_db, createdateusersales_db, updateusersales_db, updatedateusersales_db string
-		)
-
-		err = row.Scan(
-			&idusersales_db, &phone_db, &nama_db, &source_db, &statususersales_db, &createusersales_db,
-			&createdateusersales_db, &updateusersales_db, &updatedateusersales_db)
-		helpers.ErrorCheck(err)
-
-		sql_select_crmsales := `SELECT 
-				A.username, B.nmemployee    
-				FROM ` + configs.DB_tbl_trx_crmsales + ` as A  
-				JOIN ` + configs.DB_tbl_mst_employee + ` as B ON B.username = A.username   
-				WHERE A.phone = $1 
-				ORDER BY B.nmemployee ASC    
-		`
-		total_pic := 0
-		var obj_crmsales entities.Model_crmsales_simple
-		var arraobj_crmsales []entities.Model_crmsales_simple
-		rowcrmsales, errcrmsales := con.QueryContext(ctx, sql_select_crmsales, phone_db)
-		helpers.ErrorCheck(errcrmsales)
-		for rowcrmsales.Next() {
-			var (
-				username_db, nmemployee_db string
-			)
-			errcrmsales = rowcrmsales.Scan(&username_db, &nmemployee_db)
-			helpers.ErrorCheck(errcrmsales)
-			total_pic = total_pic + 1
-			obj_crmsales.Crmsales_username = username_db
-			obj_crmsales.Crmsales_nameemployee = nmemployee_db
-			arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
-		}
-
-		create := ""
-		update := ""
-		statuscss := ""
-		if createusersales_db != "" {
-			create = createusersales_db + ", " + createdateusersales_db
-		}
-		if updateusersales_db != "" {
-			update = updateusersales_db + ", " + updatedateusersales_db
-		}
-		switch statususersales_db {
-		case "NEW":
-			statuscss = configs.STATUS_NEW
-		case "VALID":
-			statuscss = configs.STATUS_COMPLETE
-		case "INVALID":
-			statuscss = configs.STATUS_CANCEL
-		}
-		obj.Crm_id = idusersales_db
-		obj.Crm_phone = phone_db
-		obj.Crm_name = nama_db
-		obj.Crm_source = source_db
-		obj.Crm_totalpic = total_pic
-		obj.Crm_pic = arraobj_crmsales
-		obj.Crm_status = statususersales_db
-		obj.Crm_statuscss = statuscss
-		obj.Crm_create = create
-		obj.Crm_update = update
-		arraobj = append(arraobj, obj)
-		msg = "Success"
+	if status == "PROCESS" {
+		sql_select += "FROM " + configs.DB_VIEW_SALES_PROCESS + "  "
 	}
-	defer row.Close()
-
-	res.Status = fiber.StatusOK
-	res.Message = msg
-	res.Record = arraobj
-	res.Perpage = perpage
-	res.Totalrecord = totalrecord
-	res.Time = time.Since(start).String()
-
-	return res, nil
-}
-func Fetch_crmprocess(search string, page int) (helpers.Responsemovie, error) {
-	var obj entities.Model_crm
-	var arraobj []entities.Model_crm
-	var res helpers.Responsemovie
-	msg := "Data Not Found"
-	con := db.CreateCon()
-	ctx := context.Background()
-	start := time.Now()
-
-	perpage := 250
-	totalrecord := 0
-	offset := page
-	sql_selectcount := ""
-	sql_selectcount += ""
-	sql_selectcount += "SELECT "
-	sql_selectcount += "COUNT(idusersales) as totalmember  "
-	sql_selectcount += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
-	if search != "" {
-		sql_selectcount += "WHERE LOWER(phone) LIKE '%" + strings.ToLower(search) + "%' "
-		sql_selectcount += "OR LOWER(nama) LIKE '%" + strings.ToLower(search) + "%' "
+	if status == "VALID" {
+		sql_select += "FROM " + configs.DB_VIEW_SALES_VALID + "  "
 	}
-
-	row_selectcount := con.QueryRowContext(ctx, sql_selectcount)
-	switch e_selectcount := row_selectcount.Scan(&totalrecord); e_selectcount {
-	case sql.ErrNoRows:
-	case nil:
-	default:
-		helpers.ErrorCheck(e_selectcount)
+	if status == "INVALID" {
+		sql_select += "FROM " + configs.DB_VIEW_SALES_INVALID + "  "
 	}
-
-	sql_select := ""
-	sql_select += ""
-	sql_select += "SELECT "
-	sql_select += "idusersales , phone, nama, "
-	sql_select += "source , statususersales,  "
-	sql_select += "createusersales, to_char(COALESCE(createdateusersales,NOW()), 'YYYY-MM-DD HH24:MI:SS'), "
-	sql_select += "updateusersales, to_char(COALESCE(updatedateusersales,NOW()) , 'YYYY-MM-DD HH24:MI:SS')"
-	sql_select += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
 	if search == "" {
 		sql_select += "ORDER BY createdateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
 	} else {

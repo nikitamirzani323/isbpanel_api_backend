@@ -49,13 +49,13 @@ func Crmhome(c *fiber.Ctx) error {
 		})
 	}
 	if client.Crm_search != "" {
-		val_crm := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + strconv.Itoa(client.Crm_page) + "_" + client.Crm_search)
+		val_crm := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + client.Crm_status + "_" + strconv.Itoa(client.Crm_page) + "_" + client.Crm_search)
 		log.Printf("Redis Delete BACKEND CRM : %d", val_crm)
 	}
 	var obj entities.Model_crm
 	var arraobj []entities.Model_crm
 	render_page := time.Now()
-	resultredis, flag := helpers.GetRedis(Fieldcrm_home_redis + "_" + strconv.Itoa(client.Crm_page) + "_" + client.Crm_search)
+	resultredis, flag := helpers.GetRedis(Fieldcrm_home_redis + "_" + client.Crm_status + "_" + strconv.Itoa(client.Crm_page) + "_" + client.Crm_search)
 	jsonredis := []byte(resultredis)
 	perpage_RD, _ := jsonparser.GetInt(jsonredis, "perpage")
 	totalrecord_RD, _ := jsonparser.GetInt(jsonredis, "totalrecord")
@@ -97,7 +97,7 @@ func Crmhome(c *fiber.Ctx) error {
 	})
 
 	if !flag {
-		result, err := models.Fetch_crm(client.Crm_search, client.Crm_page)
+		result, err := models.Fetch_crm(client.Crm_search, client.Crm_status, client.Crm_page)
 		if err != nil {
 			c.Status(fiber.StatusBadRequest)
 			return c.JSON(fiber.Map{
@@ -106,7 +106,7 @@ func Crmhome(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Fieldcrm_home_redis+"_"+strconv.Itoa(client.Crm_page)+"_"+client.Crm_search, result, 60*time.Minute)
+		helpers.SetRedis(Fieldcrm_home_redis+"_"+client.Crm_status+"_"+strconv.Itoa(client.Crm_page)+"_"+client.Crm_search, result, 60*time.Minute)
 		log.Println("CRM  MYSQL")
 		return c.JSON(result)
 	} else {
@@ -409,7 +409,7 @@ func CrmSave(c *fiber.Ctx) error {
 		})
 	}
 
-	_deleteredis_crm(client.Crm_page, "", "", "")
+	_deleteredis_crm(client.Crm_page, client.Crm_status, "", "", "")
 	return c.JSON(result)
 }
 func CrmSavestatus(c *fiber.Ctx) error {
@@ -458,7 +458,7 @@ func CrmSavestatus(c *fiber.Ctx) error {
 		})
 	}
 
-	_deleteredis_crm(client.Crm_page, "", "", "")
+	_deleteredis_crm(client.Crm_page, client.Crm_status, "", "", "")
 	return c.JSON(result)
 }
 func CrmSalesSave(c *fiber.Ctx) error {
@@ -507,7 +507,7 @@ func CrmSalesSave(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	_deleteredis_crm(client.Crm_page, client.Crmsales_phone, client.Crmsales_username, client.Search)
+	_deleteredis_crm(client.Crm_page, "", client.Crmsales_phone, client.Crmsales_username, client.Search)
 	return c.JSON(result)
 }
 func CrmSalesdelete(c *fiber.Ctx) error {
@@ -565,7 +565,7 @@ func CrmSalesdelete(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		_deleteredis_crm(client.Crm_page, client.Crmsales_phone, "", client.Search)
+		_deleteredis_crm(client.Crm_page, "", client.Crmsales_phone, "", client.Search)
 		return c.JSON(result)
 	}
 }
@@ -615,12 +615,17 @@ func CrmSavesource(c *fiber.Ctx) error {
 		})
 	}
 
-	_deleteredis_crm(client.Crm_page, "", "", "")
+	_deleteredis_crm(client.Crm_page, "", "", "", "")
 	return c.JSON(result)
 }
-func _deleteredis_crm(page int, phone, username, search string) {
-	val_master := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + strconv.Itoa(page) + "_" + search)
-	log.Printf("Redis Delete BACKEND CRM : %d", val_master)
+func _deleteredis_crm(page int, status, phone, username, search string) {
+	if status == "" {
+		val_master := helpers.DeleteRedis(Fieldcrm_home_redis + "_PROCESS_" + strconv.Itoa(page) + "_" + search)
+		log.Printf("Redis Delete BACKEND CRM : %d", val_master)
+	} else {
+		val_master := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + status + "_" + strconv.Itoa(page) + "_" + search)
+		log.Printf("Redis Delete BACKEND CRM : %d", val_master)
+	}
 
 	val_crmsales := helpers.DeleteRedis(Fieldcrmsales_home_redis + "_" + phone)
 	log.Printf("Redis Delete BACKEND CRM SALES : %d", val_crmsales)

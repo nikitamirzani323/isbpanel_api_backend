@@ -36,6 +36,8 @@ const (
 	DB_tbl_trx_crmsales        string = "tbl_trx_usersales_sales"
 	DB_VIEW_SALES_NEW          string = "VIEW_SALES_NEW"
 	DB_VIEW_SALES_PROCESS      string = "VIEW_SALES_PROCESS"
+	DB_VIEW_SALES_VALID        string = "VIEW_SALES_VALID"
+	DB_VIEW_SALES_INVALID      string = "VIEW_SALES_INVALID"
 	DB_VIEW_MEMBER_DUNIAFILM   string = "VIEW_MEMBER_DUNIAFILM"
 	DB_VIEW_MOVIE              string = "VIEW_MOVIE"
 	DB_VIEW_MOVIESERIES        string = "VIEW_MOVIESERIES"

@@ -6,6 +6,7 @@ type Response struct {
 	Record  interface{} `json:"record"`
 	Time    string      `json:"time"`
 }
+
 type Responsemovie struct {
 	Status      int         `json:"status"`
 	Message     string      `json:"message"`

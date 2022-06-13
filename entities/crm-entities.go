@@ -15,6 +15,7 @@ type Model_crm struct {
 	Crm_update    string      `json:"crm_update"`
 }
 type Model_crmsales_simple struct {
+	Crmsales_idcrmsales   int    `json:"crmsales_idcrmsales"`
 	Crmsales_username     string `json:"crmsales_username"`
 	Crmsales_nameemployee string `json:"crmsales_nameemployee"`
 	Crmsales_status       string `json:"crmsales_status"`

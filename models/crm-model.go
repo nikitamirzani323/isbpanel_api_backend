@@ -116,7 +116,7 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		helpers.ErrorCheck(err)
 
 		sql_select_crmsales := `SELECT 
-				A.username, B.nmemployee, A.statuscrmsales_dua, A.notecrmsales     
+				A.idcrmsales, A.username, B.nmemployee, A.statuscrmsales_dua, A.notecrmsales     
 				FROM ` + configs.DB_tbl_trx_crmsales + ` as A  
 				JOIN ` + configs.DB_tbl_mst_employee + ` as B ON B.username = A.username   
 				WHERE A.phone = $1 
@@ -129,11 +129,13 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		helpers.ErrorCheck(errcrmsales)
 		for rowcrmsales.Next() {
 			var (
+				idcrmsales_db                                                      int
 				username_db, nmemployee_db, statuscrmsales_dua_db, notecrmsales_db string
 			)
-			errcrmsales = rowcrmsales.Scan(&username_db, &nmemployee_db, &statuscrmsales_dua_db, &notecrmsales_db)
+			errcrmsales = rowcrmsales.Scan(&idcrmsales_db, &username_db, &nmemployee_db, &statuscrmsales_dua_db, &notecrmsales_db)
 			helpers.ErrorCheck(errcrmsales)
 			total_pic = total_pic + 1
+			obj_crmsales.Crmsales_idcrmsales = idcrmsales_db
 			obj_crmsales.Crmsales_username = username_db
 			obj_crmsales.Crmsales_nameemployee = nmemployee_db
 			obj_crmsales.Crmsales_status = statuscrmsales_dua_db

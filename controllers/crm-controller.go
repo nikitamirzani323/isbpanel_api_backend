@@ -18,6 +18,7 @@ const Fieldcrm_home_redis = "LISTCRM_BACKEND_ISBPANEL"
 const Fieldcrmsales_home_redis = "LISTCRMSALES_BACKEND_ISBPANEL"
 const Fieldcrmisbtv_home_redis = "LISTCRMISBTV_BACKEND_ISBPANEL"
 const Fieldcrmduniafilm_home_redis = "LISTCRMDUNIAFILM_BACKEND_ISBPANEL"
+const Fieldcrm_sales_redis = "LISTCRM_SALES_ISBPANEL"
 
 func Crmhome(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
@@ -408,7 +409,7 @@ func CrmSave(c *fiber.Ctx) error {
 		})
 	}
 
-	_deleteredis_crm(client.Crm_page, "", "")
+	_deleteredis_crm(client.Crm_page, "", "", "")
 	return c.JSON(result)
 }
 func CrmSavestatus(c *fiber.Ctx) error {
@@ -457,7 +458,7 @@ func CrmSavestatus(c *fiber.Ctx) error {
 		})
 	}
 
-	_deleteredis_crm(client.Crm_page, "", "")
+	_deleteredis_crm(client.Crm_page, "", "", "")
 	return c.JSON(result)
 }
 func CrmSalesSave(c *fiber.Ctx) error {
@@ -506,7 +507,7 @@ func CrmSalesSave(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	_deleteredis_crm(client.Crm_page, client.Crmsales_phone, client.Search)
+	_deleteredis_crm(client.Crm_page, client.Crmsales_phone, client.Crmsales_username, client.Search)
 	return c.JSON(result)
 }
 func CrmSalesdelete(c *fiber.Ctx) error {
@@ -564,7 +565,7 @@ func CrmSalesdelete(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		_deleteredis_crm(client.Crm_page, client.Crmsales_phone, client.Search)
+		_deleteredis_crm(client.Crm_page, client.Crmsales_phone, "", client.Search)
 		return c.JSON(result)
 	}
 }
@@ -614,14 +615,16 @@ func CrmSavesource(c *fiber.Ctx) error {
 		})
 	}
 
-	val_master := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + strconv.Itoa(client.Crm_page) + "_")
-	log.Printf("Redis Delete BACKEND CRM : %d", val_master)
+	_deleteredis_crm(client.Crm_page, "", "", "")
 	return c.JSON(result)
 }
-func _deleteredis_crm(page int, phone, search string) {
+func _deleteredis_crm(page int, phone, username, search string) {
 	val_master := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + strconv.Itoa(page) + "_" + search)
 	log.Printf("Redis Delete BACKEND CRM : %d", val_master)
 
 	val_crmsales := helpers.DeleteRedis(Fieldcrmsales_home_redis + "_" + phone)
 	log.Printf("Redis Delete BACKEND CRM SALES : %d", val_crmsales)
+
+	val_client_sales := helpers.DeleteRedis(Fieldcrm_sales_redis + "_" + username + "_PROCESS")
+	log.Printf("Redis Delete SALES CRM SALES : %d", val_client_sales)
 }

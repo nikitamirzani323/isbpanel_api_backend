@@ -15,6 +15,7 @@ import (
 )
 
 const Fieldwebsiteagen_home_redis = "LISTWEBSITEAGEN_BACKEND_ISBPANEL"
+const Fieldwebsiteagen_sales_redis = "LISTWEBSITEAGEN_SALES_ISBPANEL"
 
 func Websiteagenhome(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
@@ -141,7 +142,14 @@ func Websiteagensave(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	val_WEBSITEAGEN := helpers.DeleteRedis(Fieldwebsiteagen_home_redis + "_" + strconv.Itoa(client.Websiteagen_page) + "_" + client.Websiteagen_search)
-	log.Printf("Redis Delete BACKEND WEBSITEAGEN : %d", val_WEBSITEAGEN)
+
+	_deleteredis_websiteagen(client.Websiteagen_page, client.Websiteagen_search)
 	return c.JSON(result)
+}
+func _deleteredis_websiteagen(page int, search string) {
+	val_WEBSITEAGEN := helpers.DeleteRedis(Fieldwebsiteagen_home_redis + "_" + strconv.Itoa(page) + "_" + search)
+	log.Printf("Redis Delete BACKEND WEBSITEAGEN : %d", val_WEBSITEAGEN)
+
+	val_WEBSITEAGEN_sales := helpers.DeleteRedis(Fieldwebsiteagen_sales_redis)
+	log.Printf("Redis Delete SALES WEBSITEAGEN : %d", val_WEBSITEAGEN_sales)
 }

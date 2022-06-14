@@ -149,7 +149,7 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		if createusersales_db != "" {
 			create = createusersales_db + ", " + createdateusersales_db
 		}
-		if updateusersales_db != "" {
+		if updateusersales_db != "SYSTEM" {
 			update = updateusersales_db + ", " + updatedateusersales_db
 		}
 		switch statususersales_db {

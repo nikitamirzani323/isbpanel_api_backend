@@ -525,6 +525,54 @@ func Save_crmsource(admin, datasource, source, sData string) (helpers.Response, 
 
 	return res, nil
 }
+func Save_crmdatabase(admin, datasource, source, sData string) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	tglnow, _ := goment.New()
+	render_page := time.Now()
+
+	if sData == "New" {
+		json := []byte(datasource)
+		jsonparser.ArrayEach(json, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			database_phone, _ := jsonparser.GetString(value, "database_phone")
+			database_nama, _ := jsonparser.GetString(value, "database_nama")
+
+			flag_check := CheckDB(configs.DB_tbl_trx_usersales, "phone", database_phone)
+			log.Printf("%s - %s  - %t", database_phone, database_nama, flag_check)
+			if !flag_check {
+				sql_insert := `
+					insert into
+					` + configs.DB_tbl_trx_usersales + ` (
+						idusersales , phone, nama, source, statususersales,
+						createusersales, createdateusersales
+					) values (
+						$1, $2, $3, $4, $5,
+						$6, $7
+					)
+				`
+				field_column := configs.DB_tbl_trx_usersales + tglnow.Format("YYYY")
+				idrecord_counter := Get_counter(field_column)
+				flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_usersales, "INSERT",
+					tglnow.Format("YY")+strconv.Itoa(idrecord_counter), database_phone, database_nama, source, "NEW",
+					admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
+
+				if flag_insert {
+					msg = "Succes"
+					log.Println(msg_insert)
+				} else {
+					log.Println(msg_insert)
+				}
+			}
+		})
+	}
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
+
+	return res, nil
+}
 func Fetch_crmisbtv(search string, page int) (helpers.Responsemovie, error) {
 	var obj entities.Model_crmisbtv
 	var arraobj []entities.Model_crmisbtv

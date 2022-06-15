@@ -700,13 +700,66 @@ func CrmSavesource(c *fiber.Ctx) error {
 	_deleteredis_crm(client.Crm_page, "", "", "", "")
 	return c.JSON(result)
 }
+func CrmSavedatabase(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_crmsavesource)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+	user := c.Locals("jwt").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	temp_decp := helpers.Decryption(name)
+	client_admin, _ := helpers.Parsing_Decry(temp_decp, "==")
+
+	result, err := models.Save_crmdatabase(
+		client_admin,
+		string(client.Crm_data), client.Crm_source, client.Sdata)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	_deleteredis_crm(client.Crm_page, "", "", "", "")
+	return c.JSON(result)
+}
 func _deleteredis_crm(page int, status, phone, username, search string) {
-	if status == "" {
-		val_master := helpers.DeleteRedis(Fieldcrm_home_redis + "_PROCESS_" + strconv.Itoa(page) + "_" + search)
-		log.Printf("Redis Delete BACKEND CRM : %d", val_master)
-	} else {
-		val_master := helpers.DeleteRedis(Fieldcrm_home_redis + "_" + status + "_" + strconv.Itoa(page) + "_" + search)
-		log.Printf("Redis Delete BACKEND CRM : %d", val_master)
+	for i := 0; i <= 5000; i = i + 250 {
+		val_pusat_1 := helpers.DeleteRedis(Fieldcrm_home_redis + "_NEW_" + strconv.Itoa(i) + "_" + search)
+		val_pusat_2 := helpers.DeleteRedis(Fieldcrm_home_redis + "_PROCESS_" + strconv.Itoa(i) + "_" + search)
+		val_pusat_3 := helpers.DeleteRedis(Fieldcrm_home_redis + "_VALID_" + strconv.Itoa(i) + "_" + search)
+		val_pusat_4 := helpers.DeleteRedis(Fieldcrm_home_redis + "_INVALID_" + strconv.Itoa(i) + "_" + search)
+
+		log.Printf("Redis Delete BACKEND CRM NEW  : %d", val_pusat_1)
+		log.Printf("Redis Delete BACKEND CRM PROCESS  : %d", val_pusat_2)
+		log.Printf("Redis Delete BACKEND CRM VALID  : %d", val_pusat_3)
+		log.Printf("Redis Delete BACKEND CRM INVALID  : %d", val_pusat_4)
 	}
 
 	val_crmsales := helpers.DeleteRedis(Fieldcrmsales_home_redis + "_" + phone)

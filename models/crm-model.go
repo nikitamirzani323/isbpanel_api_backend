@@ -116,7 +116,8 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		helpers.ErrorCheck(err)
 
 		sql_select_crmsales := `SELECT 
-				A.idcrmsales, A.username, B.nmemployee, A.statuscrmsales_dua, A.notecrmsales     
+				A.idcrmsales, A.username, B.nmemployee, A.statuscrmsales_dua, A.notecrmsales, 
+				A.idwebagen, A.iduseragen, A.deposit      
 				FROM ` + configs.DB_tbl_trx_crmsales + ` as A  
 				JOIN ` + configs.DB_tbl_mst_employee + ` as B ON B.username = A.username   
 				WHERE A.phone = $1 
@@ -129,10 +130,12 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		helpers.ErrorCheck(errcrmsales)
 		for rowcrmsales.Next() {
 			var (
-				idcrmsales_db                                                      int
-				username_db, nmemployee_db, statuscrmsales_dua_db, notecrmsales_db string
+				idcrmsales_db, idwebagen_db                                                       int
+				deposit_db                                                                        float32
+				username_db, nmemployee_db, statuscrmsales_dua_db, notecrmsales_db, iduseragen_db string
 			)
-			errcrmsales = rowcrmsales.Scan(&idcrmsales_db, &username_db, &nmemployee_db, &statuscrmsales_dua_db, &notecrmsales_db)
+			errcrmsales = rowcrmsales.Scan(&idcrmsales_db, &username_db, &nmemployee_db, &statuscrmsales_dua_db, &notecrmsales_db,
+				&idwebagen_db, &iduseragen_db, &deposit_db)
 			helpers.ErrorCheck(errcrmsales)
 			total_pic = total_pic + 1
 			obj_crmsales.Crmsales_idcrmsales = idcrmsales_db
@@ -140,6 +143,9 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 			obj_crmsales.Crmsales_nameemployee = nmemployee_db
 			obj_crmsales.Crmsales_status = statuscrmsales_dua_db
 			obj_crmsales.Crmsales_note = notecrmsales_db
+			obj_crmsales.Crmsales_nmwebagen = _GetWebAgen(idwebagen_db)
+			obj_crmsales.Crmsales_idwebagen = iduseragen_db
+			obj_crmsales.Crmsales_deposit = deposit_db
 			arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
 		}
 
@@ -726,4 +732,23 @@ func Fetch_crmduniafilm(search string, page int) (helpers.Responsemovie, error) 
 	res.Time = time.Since(start).String()
 
 	return res, nil
+}
+func _GetWebAgen(idrecord int) string {
+	con := db.CreateCon()
+	ctx := context.Background()
+	nmwebagen_db := ""
+
+	sql_select := `SELECT
+		nmwebagen    
+		FROM ` + configs.DB_tbl_mst_websiteagen + `  
+		WHERE idwebagen = $1 
+	`
+	row := con.QueryRowContext(ctx, sql_select, idrecord)
+	switch e := row.Scan(&nmwebagen_db); e {
+	case sql.ErrNoRows:
+	case nil:
+	default:
+		helpers.ErrorCheck(e)
+	}
+	return nmwebagen_db
 }

@@ -15,11 +15,14 @@ type Model_crm struct {
 	Crm_update    string      `json:"crm_update"`
 }
 type Model_crmsales_simple struct {
-	Crmsales_idcrmsales   int    `json:"crmsales_idcrmsales"`
-	Crmsales_username     string `json:"crmsales_username"`
-	Crmsales_nameemployee string `json:"crmsales_nameemployee"`
-	Crmsales_status       string `json:"crmsales_status"`
-	Crmsales_note         string `json:"crmsales_note"`
+	Crmsales_idcrmsales   int     `json:"crmsales_idcrmsales"`
+	Crmsales_username     string  `json:"crmsales_username"`
+	Crmsales_nameemployee string  `json:"crmsales_nameemployee"`
+	Crmsales_status       string  `json:"crmsales_status"`
+	Crmsales_note         string  `json:"crmsales_note"`
+	Crmsales_nmwebagen    string  `json:"crmsales_nmwebagen"`
+	Crmsales_idwebagen    string  `json:"crmsales_idwebagen"`
+	Crmsales_deposit      float32 `json:"crmsales_deposit"`
 }
 type Model_crmsales struct {
 	Crmsales_id           int    `json:"crmsales_id"`

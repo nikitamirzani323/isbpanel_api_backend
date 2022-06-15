@@ -81,12 +81,18 @@ func Crmhome(c *fiber.Ctx) error {
 			crmsales_nameemployee, _ := jsonparser.GetString(value, "crmsales_nameemployee")
 			crmsales_status, _ := jsonparser.GetString(value, "crmsales_status")
 			crmsales_note, _ := jsonparser.GetString(value, "crmsales_note")
+			crmsales_nmwebagen, _ := jsonparser.GetString(value, "crmsales_nmwebagen")
+			crmsales_idwebagen, _ := jsonparser.GetString(value, "crmsales_idwebagen")
+			crmsales_deposit, _ := jsonparser.GetFloat(value, "crmsales_deposit")
 
 			obj_crmsales.Crmsales_idcrmsales = int(crmsales_idcrmsales)
 			obj_crmsales.Crmsales_username = crmsales_username
 			obj_crmsales.Crmsales_nameemployee = crmsales_nameemployee
 			obj_crmsales.Crmsales_status = crmsales_status
 			obj_crmsales.Crmsales_note = crmsales_note
+			obj_crmsales.Crmsales_nmwebagen = crmsales_nmwebagen
+			obj_crmsales.Crmsales_idwebagen = crmsales_idwebagen
+			obj_crmsales.Crmsales_deposit = float32(crmsales_deposit)
 			arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
 		})
 

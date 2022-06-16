@@ -123,6 +123,7 @@ func Init() *fiber.App {
 	app.Post("/api/crmsalessave", middleware.JWTProtected(), controllers.CrmSalesSave)
 	app.Post("/api/crmsalesdelete", middleware.JWTProtected(), controllers.CrmSalesdelete)
 	app.Post("/api/crmsavesource", middleware.JWTProtected(), controllers.CrmSavesource)
+	app.Post("/api/crmsavedatabase", middleware.JWTProtected(), controllers.CrmSavedatabase)
 
 	app.Post("/api/slotprovider", middleware.JWTProtected(), controllers.Providerslothome)
 	app.Post("/api/slotprovidersave", middleware.JWTProtected(), controllers.ProviderslotSave)

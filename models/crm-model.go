@@ -116,7 +116,8 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		helpers.ErrorCheck(err)
 
 		sql_select_crmsales := `SELECT 
-				A.idcrmsales, A.username, B.nmemployee, A.statuscrmsales_dua, A.notecrmsales     
+				A.idcrmsales, A.username, B.nmemployee, A.statuscrmsales_dua, A.notecrmsales, 
+				A.idwebagen, A.iduseragen, A.deposit      
 				FROM ` + configs.DB_tbl_trx_crmsales + ` as A  
 				JOIN ` + configs.DB_tbl_mst_employee + ` as B ON B.username = A.username   
 				WHERE A.phone = $1 
@@ -129,10 +130,12 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		helpers.ErrorCheck(errcrmsales)
 		for rowcrmsales.Next() {
 			var (
-				idcrmsales_db                                                      int
-				username_db, nmemployee_db, statuscrmsales_dua_db, notecrmsales_db string
+				idcrmsales_db, idwebagen_db                                                       int
+				deposit_db                                                                        float32
+				username_db, nmemployee_db, statuscrmsales_dua_db, notecrmsales_db, iduseragen_db string
 			)
-			errcrmsales = rowcrmsales.Scan(&idcrmsales_db, &username_db, &nmemployee_db, &statuscrmsales_dua_db, &notecrmsales_db)
+			errcrmsales = rowcrmsales.Scan(&idcrmsales_db, &username_db, &nmemployee_db, &statuscrmsales_dua_db, &notecrmsales_db,
+				&idwebagen_db, &iduseragen_db, &deposit_db)
 			helpers.ErrorCheck(errcrmsales)
 			total_pic = total_pic + 1
 			obj_crmsales.Crmsales_idcrmsales = idcrmsales_db
@@ -140,6 +143,9 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 			obj_crmsales.Crmsales_nameemployee = nmemployee_db
 			obj_crmsales.Crmsales_status = statuscrmsales_dua_db
 			obj_crmsales.Crmsales_note = notecrmsales_db
+			obj_crmsales.Crmsales_nmwebagen = _GetWebAgen(idwebagen_db)
+			obj_crmsales.Crmsales_idwebagen = iduseragen_db
+			obj_crmsales.Crmsales_deposit = deposit_db
 			arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
 		}
 
@@ -525,6 +531,54 @@ func Save_crmsource(admin, datasource, source, sData string) (helpers.Response, 
 
 	return res, nil
 }
+func Save_crmdatabase(admin, datasource, source, sData string) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	tglnow, _ := goment.New()
+	render_page := time.Now()
+
+	if sData == "New" {
+		json := []byte(datasource)
+		jsonparser.ArrayEach(json, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			database_phone, _ := jsonparser.GetString(value, "database_phone")
+			database_nama, _ := jsonparser.GetString(value, "database_nama")
+
+			flag_check := CheckDB(configs.DB_tbl_trx_usersales, "phone", database_phone)
+			log.Printf("%s - %s  - %t", database_phone, database_nama, flag_check)
+			if !flag_check {
+				sql_insert := `
+					insert into
+					` + configs.DB_tbl_trx_usersales + ` (
+						idusersales , phone, nama, source, statususersales,
+						createusersales, createdateusersales
+					) values (
+						$1, $2, $3, $4, $5,
+						$6, $7
+					)
+				`
+				field_column := configs.DB_tbl_trx_usersales + tglnow.Format("YYYY")
+				idrecord_counter := Get_counter(field_column)
+				flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_usersales, "INSERT",
+					tglnow.Format("YY")+strconv.Itoa(idrecord_counter), database_phone, database_nama, source, "NEW",
+					admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
+
+				if flag_insert {
+					msg = "Succes"
+					log.Println(msg_insert)
+				} else {
+					log.Println(msg_insert)
+				}
+			}
+		})
+	}
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
+
+	return res, nil
+}
 func Fetch_crmisbtv(search string, page int) (helpers.Responsemovie, error) {
 	var obj entities.Model_crmisbtv
 	var arraobj []entities.Model_crmisbtv
@@ -678,4 +732,23 @@ func Fetch_crmduniafilm(search string, page int) (helpers.Responsemovie, error) 
 	res.Time = time.Since(start).String()
 
 	return res, nil
+}
+func _GetWebAgen(idrecord int) string {
+	con := db.CreateCon()
+	ctx := context.Background()
+	nmwebagen_db := ""
+
+	sql_select := `SELECT
+		nmwebagen    
+		FROM ` + configs.DB_tbl_mst_websiteagen + `  
+		WHERE idwebagen = $1 
+	`
+	row := con.QueryRowContext(ctx, sql_select, idrecord)
+	switch e := row.Scan(&nmwebagen_db); e {
+	case sql.ErrNoRows:
+	case nil:
+	default:
+		helpers.ErrorCheck(e)
+	}
+	return nmwebagen_db
 }

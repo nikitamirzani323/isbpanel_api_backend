@@ -141,7 +141,7 @@ func PrediksislotSave(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	_deleteredis_prediksislot(client.Providerslot_id)
+	_deleteredis_prediksislot(client.Providerslot_id, client.Providerslot_slug)
 	return c.JSON(result)
 }
 func PrediksislotDelete(c *fiber.Ctx) error {
@@ -198,7 +198,7 @@ func PrediksislotDelete(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		_deleteredis_prediksislot(client.Providerslot_id)
+		_deleteredis_prediksislot(client.Providerslot_id, client.Providerslot_slug)
 		return c.JSON(result)
 	}
 }
@@ -256,11 +256,11 @@ func PrediksislotGenerator(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		_deleteredis_prediksislot(client.Providerslot_id)
+		_deleteredis_prediksislot(client.Providerslot_id, client.Providerslot_slug)
 		return c.JSON(result)
 	}
 }
-func _deleteredis_prediksislot(idproviderslot int) {
+func _deleteredis_prediksislot(idproviderslot int, slug string) {
 	val_master := helpers.DeleteRedis(Fieldprediksislot_home_redis + "_" + strconv.Itoa(idproviderslot))
 	log.Printf("Redis Delete BACKEND PREDIKSI SLOT : %d", val_master)
 
@@ -270,6 +270,12 @@ func _deleteredis_prediksislot(idproviderslot int) {
 	val_client_providerslot := helpers.DeleteRedis("LISTPROVIDERSLOT_FRONTEND_ISBPANEL")
 	log.Printf("Redis Delete client PREDIKSI SLOT : %d", val_client_providerslot)
 
+	val_client_providerslot_slug := helpers.DeleteRedis("LISTPROVIDERSLOT_FRONTEND_ISBPANEL_" + slug)
+	log.Printf("Redis Delete client PREDIKSI SLOT SLUG : %d", val_client_providerslot_slug)
+
 	val_client_prediksislot := helpers.DeleteRedis("LISTPREDIKSISLOT_FRONTEND_ISBPANEL")
 	log.Printf("Redis Delete client PREDIKSI SLOT : %d", val_client_prediksislot)
+
+	val_client_prediksislot_slug := helpers.DeleteRedis("LISTPREDIKSISLOT_FRONTEND_ISBPANEL_" + slug)
+	log.Printf("Redis Delete client PREDIKSI SLOT SLUG : %d", val_client_prediksislot_slug)
 }

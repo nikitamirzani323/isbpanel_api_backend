@@ -121,16 +121,22 @@ func ProviderslotSave(c *fiber.Ctx) error {
 		})
 	}
 
-	_deleteredis_providerslot()
+	_deleteredis_providerslot(client.Providerslot_slug)
 	return c.JSON(result)
 }
-func _deleteredis_providerslot() {
+func _deleteredis_providerslot(slug string) {
 	val_master := helpers.DeleteRedis(Fieldproviderslot_home_redis)
 	log.Printf("Redis Delete BACKEND PROVIDER SLOT : %d", val_master)
 
 	val_client_providerslot := helpers.DeleteRedis("LISTPROVIDERSLOT_FRONTEND_ISBPANEL")
 	log.Printf("Redis Delete client PREDIKSI SLOT : %d", val_client_providerslot)
 
+	val_client_providerslot_slug := helpers.DeleteRedis("LISTPROVIDERSLOT_FRONTEND_ISBPANEL_" + slug)
+	log.Printf("Redis Delete client PREDIKSI SLOT SLUG : %d", val_client_providerslot_slug)
+
 	val_client_prediksislot := helpers.DeleteRedis("LISTPREDIKSISLOT_FRONTEND_ISBPANEL")
 	log.Printf("Redis Delete client PREDIKSI SLOT : %d", val_client_prediksislot)
+
+	val_client_prediksislot_slug := helpers.DeleteRedis("LISTPREDIKSISLOT_FRONTEND_ISBPANEL_" + slug)
+	log.Printf("Redis Delete client PREDIKSI SLOT SLUG : %d", val_client_prediksislot_slug)
 }

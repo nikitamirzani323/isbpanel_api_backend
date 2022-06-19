@@ -33,18 +33,23 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 	sql_selectcount += ""
 	sql_selectcount += "SELECT "
 	sql_selectcount += "COUNT(idusersales) as totalmember  "
-	if status == "NEW" {
+	switch status {
+	case "NEW":
 		sql_selectcount += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
-	}
-	if status == "PROCESS" {
+	case "PROCESS":
 		sql_selectcount += "FROM " + configs.DB_VIEW_SALES_PROCESS + "  "
-	}
-	if status == "VALID" {
+	case "VALID":
 		sql_selectcount += "FROM " + configs.DB_VIEW_SALES_VALID + "  "
-	}
-	if status == "INVALID" {
+	case "VALIDMAINTENANCE":
+		sql_selectcount += "FROM " + configs.DB_VIEW_SALES_VALID + "  "
+	case "INVALID":
 		sql_selectcount += "FROM " + configs.DB_VIEW_SALES_INVALID + "  "
+	case "MAINTENANCE":
+		sql_selectcount += "FROM " + configs.DB_VIEW_SALES_MAINTENANCE + "  "
+	case "FOLLOWUP":
+		sql_selectcount += "FROM " + configs.DB_VIEW_SALES_FOLLOWUP + "  "
 	}
+
 	if search != "" {
 		sql_selectcount += "WHERE LOWER(phone) LIKE '%" + strings.ToLower(search) + "%' "
 		sql_selectcount += "OR LOWER(nama) LIKE '%" + strings.ToLower(search) + "%' "
@@ -70,8 +75,14 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		sql_select += "FROM " + configs.DB_VIEW_SALES_PROCESS + "  "
 	case "VALID":
 		sql_select += "FROM " + configs.DB_VIEW_SALES_VALID + "  "
+	case "VALIDMAINTENANCE":
+		sql_select += "FROM " + configs.DB_VIEW_SALES_VALID + "  "
 	case "INVALID":
 		sql_select += "FROM " + configs.DB_VIEW_SALES_INVALID + "  "
+	case "MAINTENANCE":
+		sql_select += "FROM " + configs.DB_VIEW_SALES_MAINTENANCE + "  "
+	case "FOLLOWUP":
+		sql_select += "FROM " + configs.DB_VIEW_SALES_FOLLOWUP + "  "
 	default:
 		sql_select += "FROM " + configs.DB_VIEW_SALES_NEW + "  "
 	}
@@ -81,7 +92,13 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 			sql_select += "ORDER BY updatedateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
 		case "VALID":
 			sql_select += "ORDER BY updatedateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
+		case "VALIDMAINTENANCE":
+			sql_select += "ORDER BY updatedateusersales ASC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
 		case "INVALID":
+			sql_select += "ORDER BY updatedateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
+		case "MAINTENANCE":
+			sql_select += "ORDER BY updatedateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
+		case "FOLLOWUP":
 			sql_select += "ORDER BY updatedateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
 		default:
 			sql_select += "ORDER BY createdateusersales DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
@@ -94,7 +111,13 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 			sql_select += "ORDER BY updatedateusersales DESC  LIMIT " + strconv.Itoa(perpage)
 		case "VALID":
 			sql_select += "ORDER BY updatedateusersales DESC  LIMIT " + strconv.Itoa(perpage)
+		case "VALIDMAINTENANCE":
+			sql_select += "ORDER BY updatedateusersales ASC  LIMIT " + strconv.Itoa(perpage)
 		case "INVALID":
+			sql_select += "ORDER BY updatedateusersales DESC  LIMIT " + strconv.Itoa(perpage)
+		case "MAINTENANCE":
+			sql_select += "ORDER BY updatedateusersales DESC  LIMIT " + strconv.Itoa(perpage)
+		case "FOLLOWUP":
 			sql_select += "ORDER BY updatedateusersales DESC  LIMIT " + strconv.Itoa(perpage)
 		default:
 			sql_select += "ORDER BY createdateusersales DESC  LIMIT " + strconv.Itoa(perpage)
@@ -116,7 +139,7 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		helpers.ErrorCheck(err)
 
 		sql_select_crmsales := `SELECT 
-				A.idcrmsales, A.username, B.nmemployee, A.statuscrmsales_dua, A.notecrmsales, 
+				A.idcrmsales, A.username, B.nmemployee, A.statuscrmsales_satu ,A.statuscrmsales_dua, A.notecrmsales, 
 				A.idwebagen, A.iduseragen, A.deposit      
 				FROM ` + configs.DB_tbl_trx_crmsales + ` as A  
 				JOIN ` + configs.DB_tbl_mst_employee + ` as B ON B.username = A.username   
@@ -130,23 +153,40 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		helpers.ErrorCheck(errcrmsales)
 		for rowcrmsales.Next() {
 			var (
-				idcrmsales_db, idwebagen_db                                                       int
-				deposit_db                                                                        float32
-				username_db, nmemployee_db, statuscrmsales_dua_db, notecrmsales_db, iduseragen_db string
+				idcrmsales_db, idwebagen_db                                                                               int
+				deposit_db                                                                                                float32
+				username_db, nmemployee_db, statuscrmsales_satu_db, statuscrmsales_dua_db, notecrmsales_db, iduseragen_db string
 			)
-			errcrmsales = rowcrmsales.Scan(&idcrmsales_db, &username_db, &nmemployee_db, &statuscrmsales_dua_db, &notecrmsales_db,
+			errcrmsales = rowcrmsales.Scan(&idcrmsales_db, &username_db, &nmemployee_db, &statuscrmsales_satu_db, &statuscrmsales_dua_db, &notecrmsales_db,
 				&idwebagen_db, &iduseragen_db, &deposit_db)
 			helpers.ErrorCheck(errcrmsales)
-			total_pic = total_pic + 1
-			obj_crmsales.Crmsales_idcrmsales = idcrmsales_db
-			obj_crmsales.Crmsales_username = username_db
-			obj_crmsales.Crmsales_nameemployee = nmemployee_db
-			obj_crmsales.Crmsales_status = statuscrmsales_dua_db
-			obj_crmsales.Crmsales_note = notecrmsales_db
-			obj_crmsales.Crmsales_nmwebagen = _GetWebAgen(idwebagen_db)
-			obj_crmsales.Crmsales_idwebagen = iduseragen_db
-			obj_crmsales.Crmsales_deposit = deposit_db
-			arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
+			if status == "MAINTENANCE" {
+				if statuscrmsales_satu_db == "" {
+					total_pic = total_pic + 1
+					obj_crmsales.Crmsales_idcrmsales = idcrmsales_db
+					obj_crmsales.Crmsales_username = username_db
+					obj_crmsales.Crmsales_nameemployee = nmemployee_db
+					obj_crmsales.Crmsales_status_utama = statuscrmsales_satu_db
+					obj_crmsales.Crmsales_status = statuscrmsales_dua_db
+					obj_crmsales.Crmsales_note = notecrmsales_db
+					obj_crmsales.Crmsales_nmwebagen = _GetWebAgen(idwebagen_db)
+					obj_crmsales.Crmsales_idwebagen = iduseragen_db
+					obj_crmsales.Crmsales_deposit = deposit_db
+					arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
+				}
+			} else {
+				total_pic = total_pic + 1
+				obj_crmsales.Crmsales_idcrmsales = idcrmsales_db
+				obj_crmsales.Crmsales_username = username_db
+				obj_crmsales.Crmsales_nameemployee = nmemployee_db
+				obj_crmsales.Crmsales_status_utama = statuscrmsales_satu_db
+				obj_crmsales.Crmsales_status = statuscrmsales_dua_db
+				obj_crmsales.Crmsales_note = notecrmsales_db
+				obj_crmsales.Crmsales_nmwebagen = _GetWebAgen(idwebagen_db)
+				obj_crmsales.Crmsales_idwebagen = iduseragen_db
+				obj_crmsales.Crmsales_deposit = deposit_db
+				arraobj_crmsales = append(arraobj_crmsales, obj_crmsales)
+			}
 		}
 
 		create := ""
@@ -567,6 +607,50 @@ func Save_crmdatabase(admin, datasource, source, sData string) (helpers.Response
 					log.Println(msg_insert)
 				} else {
 					log.Println(msg_insert)
+				}
+			}
+		})
+	}
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
+
+	return res, nil
+}
+func Save_crmmaintenance(admin, datasource, sData string) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	tglnow, _ := goment.New()
+	render_page := time.Now()
+
+	if sData == "New" {
+		json := []byte(datasource)
+		jsonparser.ArrayEach(json, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			crm_id, _ := jsonparser.GetInt(value, "crm_id")
+			crm_phone, _ := jsonparser.GetString(value, "crm_phone")
+
+			flag_check := CheckDBTwoField(configs.DB_tbl_trx_usersales, "idusersales", strconv.Itoa(int(crm_id)), "phone", crm_phone)
+			log.Printf("%d - %s  - %t", crm_id, crm_phone, flag_check)
+			if flag_check {
+				sql_update := `
+					UPDATE 
+					` + configs.DB_tbl_trx_usersales + `  
+					SET statususersales=$1, 
+					updateusersales=$2, updatedateusersales=$3 
+					WHERE idusersales=$4 
+					AND phone=$5 
+				`
+
+				flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_usersales, "UPDATE",
+					"MAINTENANCE", admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), strconv.Itoa(int(crm_id)), crm_phone)
+
+				if flag_update {
+					msg = "Succes"
+					log.Println(msg_update)
+				} else {
+					log.Println(msg_update)
 				}
 			}
 		})

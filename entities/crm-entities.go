@@ -18,6 +18,7 @@ type Model_crmsales_simple struct {
 	Crmsales_idcrmsales   int     `json:"crmsales_idcrmsales"`
 	Crmsales_username     string  `json:"crmsales_username"`
 	Crmsales_nameemployee string  `json:"crmsales_nameemployee"`
+	Crmsales_status_utama string  `json:"crmsales_status_utama"`
 	Crmsales_status       string  `json:"crmsales_status"`
 	Crmsales_note         string  `json:"crmsales_note"`
 	Crmsales_nmwebagen    string  `json:"crmsales_nmwebagen"`
@@ -97,6 +98,12 @@ type Controller_crmsavesource struct {
 	Crm_page   int             `json:"crm_page"`
 	Crm_source string          `json:"crm_source" `
 	Crm_data   json.RawMessage `json:"crm_data" validate:"required"`
+}
+type Controller_crmsavemaintenance struct {
+	Page     string          `json:"page" validate:"required"`
+	Sdata    string          `json:"sdata" validate:"required"`
+	Crm_page int             `json:"crm_page"`
+	Crm_data json.RawMessage `json:"crm_data" validate:"required"`
 }
 type Controller_crmsalesdelete struct {
 	Page           string `json:"page" validate:"required"`

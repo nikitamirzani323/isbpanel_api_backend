@@ -61,7 +61,8 @@ type Controller_crm struct {
 	Crm_page   int    `json:"crm_page"`
 }
 type Controller_crmsales struct {
-	Crmsales_phone string `json:"crmsales_phone"`
+	Crmsales_phone  string `json:"crmsales_phone"`
+	Crmsales_status string `json:"crmsales_status"`
 }
 type Controller_crmdeposit struct {
 	Crmsales_idcrmsales int `json:"crmsales_idcrmsales" validate:"required"`

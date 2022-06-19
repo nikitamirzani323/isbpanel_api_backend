@@ -168,7 +168,7 @@ func Crmsales(c *fiber.Ctx) error {
 	var obj entities.Model_crmsales
 	var arraobj []entities.Model_crmsales
 	render_page := time.Now()
-	resultredis, flag := helpers.GetRedis(Fieldcrmsales_home_redis + "_" + client.Crmsales_phone)
+	resultredis, flag := helpers.GetRedis(Fieldcrmsales_home_redis + "_" + client.Crmsales_phone + "_" + client.Crmsales_status)
 	jsonredis := []byte(resultredis)
 	perpage_RD, _ := jsonparser.GetInt(jsonredis, "perpage")
 	totalrecord_RD, _ := jsonparser.GetInt(jsonredis, "totalrecord")
@@ -193,7 +193,7 @@ func Crmsales(c *fiber.Ctx) error {
 	})
 
 	if !flag {
-		result, err := models.Fetch_crmsales(client.Crmsales_phone)
+		result, err := models.Fetch_crmsales(client.Crmsales_phone, client.Crmsales_status)
 		if err != nil {
 			c.Status(fiber.StatusBadRequest)
 			return c.JSON(fiber.Map{
@@ -202,7 +202,7 @@ func Crmsales(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Fieldcrmsales_home_redis+"_"+client.Crmsales_phone, result, 60*time.Minute)
+		helpers.SetRedis(Fieldcrmsales_home_redis+"_"+client.Crmsales_phone+"_"+client.Crmsales_status, result, 60*time.Minute)
 		log.Println("CRM SALES  MYSQL")
 		return c.JSON(result)
 	} else {
@@ -827,6 +827,12 @@ func _deleteredis_crm(page int, status, phone, username, search string) {
 
 	val_crmsales := helpers.DeleteRedis(Fieldcrmsales_home_redis + "_" + phone)
 	log.Printf("Redis Delete BACKEND CRM SALES : %d", val_crmsales)
+
+	val_crmsales2 := helpers.DeleteRedis(Fieldcrmsales_home_redis + "_" + phone + "_")
+	log.Printf("Redis Delete BACKEND CRM SALES : %d", val_crmsales2)
+
+	val_crmsales3 := helpers.DeleteRedis(Fieldcrmsales_home_redis + "_" + phone + "_MAINTENANCE")
+	log.Printf("Redis Delete BACKEND CRM SALES MAINTENANCE : %d", val_crmsales3)
 
 	val_client_sales := helpers.DeleteRedis(Fieldcrm_sales_redis + "_" + username + "_PROCESS")
 	log.Printf("Redis Delete SALES CRM SALES : %d", val_client_sales)

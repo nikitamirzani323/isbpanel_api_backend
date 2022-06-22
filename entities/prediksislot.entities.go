@@ -18,17 +18,20 @@ type Controller_prediksislotsave struct {
 	Sdata                 string `json:"sdata" validate:"required"`
 	Prediksislot_id       int    `json:"prediksislot_id"`
 	Providerslot_id       int    `json:"providerslot_id" validate:"required"`
+	Providerslot_slug     string `json:"providerslot_slug" validate:"required"`
 	Prediksislot_name     string `json:"prediksislot_name" validate:"required"`
 	Prediksislot_prediksi int    `json:"prediksislot_prediksi"`
 	Prediksislot_image    string `json:"prediksislot_image" validate:"required"`
 	Prediksislot_status   string `json:"prediksislot_status" validate:"required"`
 }
 type Controller_prediksislotdelete struct {
-	Page            string `json:"page" validate:"required"`
-	Prediksislot_id int    `json:"prediksislot_id" validate:"required"`
-	Providerslot_id int    `json:"providerslot_id" validate:"required"`
+	Page              string `json:"page" validate:"required"`
+	Prediksislot_id   int    `json:"prediksislot_id" validate:"required"`
+	Providerslot_id   int    `json:"providerslot_id" validate:"required"`
+	Providerslot_slug string `json:"providerslot_slug" validate:"required"`
 }
 type Controller_prediksislotgenerator struct {
-	Page            string `json:"page" validate:"required"`
-	Providerslot_id int    `json:"providerslot_id" validate:"required"`
+	Page              string `json:"page" validate:"required"`
+	Providerslot_id   int    `json:"providerslot_id" validate:"required"`
+	Providerslot_slug string `json:"providerslot_slug" validate:"required"`
 }

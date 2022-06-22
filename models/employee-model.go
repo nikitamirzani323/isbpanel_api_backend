@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"time"
 
@@ -132,6 +133,10 @@ func Fetch_employeeByDepartement(iddepart string) (helpers.Response, error) {
 
 		obj.Employee_username = username_db
 		obj.Employee_name = nmemployee_db
+		obj.Employee_deposit = _GetSalesStatus(username_db, "DEPOSIT")
+		obj.Employee_reject = _GetSalesStatus(username_db, "REJECT")
+		obj.Employee_noanswer = _GetSalesStatus(username_db, "NOANSWER")
+		obj.Employee_invalid = _GetSalesStatus(username_db, "INVALID")
 		arraobj = append(arraobj, obj)
 		msg = "Success"
 	}
@@ -229,4 +234,29 @@ func Save_employee(admin, username, password, iddepart, name, phone, status, sDa
 	res.Time = time.Since(render_page).String()
 
 	return res, nil
+}
+func _GetSalesStatus(username string, status string) int {
+	con := db.CreateCon()
+	ctx := context.Background()
+	total := 0
+
+	sql_select := ""
+	sql_select += "SELECT "
+	sql_select += "count(idcrmsales) as total "
+	sql_select += "FROM " + configs.DB_tbl_trx_crmsales + " "
+	sql_select += "WHERE username = $1 "
+	if status == "INVALID" {
+		sql_select += "AND statuscrmsales_satu = '" + status + "' "
+	} else {
+		sql_select += "AND statuscrmsales_dua = '" + status + "' "
+	}
+	log.Println(sql_select)
+	row := con.QueryRowContext(ctx, sql_select, username)
+	switch e := row.Scan(&total); e {
+	case sql.ErrNoRows:
+	case nil:
+	default:
+		helpers.ErrorCheck(e)
+	}
+	return total
 }

@@ -13,6 +13,10 @@ type Model_employee struct {
 type Model_employeebydepart struct {
 	Employee_username string `json:"employee_username"`
 	Employee_name     string `json:"employee_name"`
+	Employee_deposit  int    `json:"employee_deposit"`
+	Employee_noanswer int    `json:"employee_noanswer"`
+	Employee_reject   int    `json:"employee_reject"`
+	Employee_invalid  int    `json:"employee_invalid"`
 }
 
 type Controller_employeesave struct {

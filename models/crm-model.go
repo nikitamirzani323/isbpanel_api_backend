@@ -201,6 +201,8 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 		switch statususersales_db {
 		case "NEW":
 			statuscss = configs.STATUS_NEW
+		case "MAINTENANCE":
+			statuscss = configs.STATUS_NEW
 		case "PROCESS":
 			statuscss = configs.STATUS_RUNNING
 		case "VALID":

@@ -116,9 +116,17 @@ func EmployeeByDepart(c *fiber.Ctx) error {
 	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
 		employee_username, _ := jsonparser.GetString(value, "employee_username")
 		employee_name, _ := jsonparser.GetString(value, "employee_name")
+		employee_deposit, _ := jsonparser.GetInt(value, "employee_deposit")
+		employee_noanswer, _ := jsonparser.GetInt(value, "employee_noanswer")
+		employee_reject, _ := jsonparser.GetInt(value, "employee_reject")
+		employee_invalid, _ := jsonparser.GetInt(value, "employee_invalid")
 
 		obj.Employee_username = employee_username
 		obj.Employee_name = employee_name
+		obj.Employee_deposit = int(employee_deposit)
+		obj.Employee_noanswer = int(employee_noanswer)
+		obj.Employee_reject = int(employee_reject)
+		obj.Employee_invalid = int(employee_invalid)
 		arraobj = append(arraobj, obj)
 	})
 

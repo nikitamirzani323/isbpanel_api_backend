@@ -133,14 +133,81 @@ func Fetch_employeeByDepartement(iddepart string) (helpers.Response, error) {
 
 		obj.Employee_username = username_db
 		obj.Employee_name = nmemployee_db
-		obj.Employee_deposit = _GetSalesStatus(username_db, "DEPOSIT")
-		obj.Employee_reject = _GetSalesStatus(username_db, "REJECT")
-		obj.Employee_noanswer = _GetSalesStatus(username_db, "NOANSWER")
-		obj.Employee_invalid = _GetSalesStatus(username_db, "INVALID")
+		obj.Employee_deposit = _GetSalesStatus(username_db, "DEPOSIT", "")
+		obj.Employee_reject = _GetSalesStatus(username_db, "REJECT", "")
+		obj.Employee_noanswer = _GetSalesStatus(username_db, "NOANSWER", "")
+		obj.Employee_invalid = _GetSalesStatus(username_db, "INVALID", "")
 		arraobj = append(arraobj, obj)
 		msg = "Success"
 	}
 	defer row.Close()
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = arraobj
+	res.Time = time.Since(start).String()
+
+	return res, nil
+}
+func Fetch_employeeBySalesPerformance(iddepart, username string) (helpers.Response, error) {
+	var obj entities.Model_employeebysalesperform
+	var arraobj []entities.Model_employeebysalesperform
+	var res helpers.Response
+	msg := "Data Not Found"
+	con := db.CreateCon()
+	ctx := context.Background()
+	start := time.Now()
+
+	//LIST DEPOSIT
+	var obj_listdeposit entities.Model_crmmemberlistdeposit
+	var arraobj_listdeposit []entities.Model_crmmemberlistdeposit
+	sql_select := `SELECT
+			B.phone , B.nama, B.source, 
+			C.nmwebagen, A.iduseragen, A.deposit, 
+			A.updatecrmsales, to_char(COALESCE(A.updatedatecrmsales,now()), 'YYYY-MM-DD HH24:MI:SS')  
+			FROM ` + configs.DB_tbl_trx_crmsales + ` as A 
+			JOIN ` + configs.DB_tbl_trx_usersales + ` as B ON B.phone = A.phone  
+			JOIN ` + configs.DB_tbl_mst_websiteagen + ` as C ON C.idwebagen = A.idwebagen   
+			WHERE A.username=$1 
+			AND A.statuscrmsales_satu='VALID' 
+			AND A.statuscrmsales_dua='DEPOSIT'  
+			ORDER BY updatedatecrmsales DESC 
+	`
+
+	row, err := con.QueryContext(ctx, sql_select, username)
+	helpers.ErrorCheck(err)
+	for row.Next() {
+		var (
+			phone_db, nama_db, source_db             string
+			nmwebagen_db, iduseragen_db              string
+			updatecrmsales_db, updatedatecrmsales_db string
+			deposit_db                               float32
+		)
+
+		err = row.Scan(&phone_db, &nama_db, &source_db, &nmwebagen_db, &iduseragen_db, &deposit_db,
+			&updatecrmsales_db, &updatedatecrmsales_db)
+
+		helpers.ErrorCheck(err)
+
+		obj_listdeposit.Crmsdeposit_phone = phone_db
+		obj_listdeposit.Crmsdeposit_nama = nama_db
+		obj_listdeposit.Crmsdeposit_source = source_db
+		obj_listdeposit.Crmsdeposit_nmwebagen = nmwebagen_db
+		obj_listdeposit.Crmsdeposit_iduseragen = iduseragen_db
+		obj_listdeposit.Crmsdeposit_deposit = deposit_db
+		obj_listdeposit.Crmsdeposit_update = updatecrmsales_db + ", " + updatedatecrmsales_db
+		arraobj_listdeposit = append(arraobj_listdeposit, obj_listdeposit)
+		msg = "Success"
+	}
+	defer row.Close()
+
+	obj.Sales_deposit = _GetSalesStatus(username, "DEPOSIT", "")
+	obj.Sales_depositsum = float32(_GetSalesStatus(username, "DEPOSIT", "SUM"))
+	obj.Sales_reject = _GetSalesStatus(username, "REJECT", "")
+	obj.Sales_noanswer = _GetSalesStatus(username, "NOANSWER", "")
+	obj.Sales_invalid = _GetSalesStatus(username, "INVALID", "")
+	obj.Sales_listdeposit = arraobj_listdeposit
+	arraobj = append(arraobj, obj)
 
 	res.Status = fiber.StatusOK
 	res.Message = msg
@@ -235,14 +302,23 @@ func Save_employee(admin, username, password, iddepart, name, phone, status, sDa
 
 	return res, nil
 }
-func _GetSalesStatus(username string, status string) int {
+func _GetSalesStatus(username string, status, tipe string) int {
 	con := db.CreateCon()
 	ctx := context.Background()
-	total := 0
+
+	var (
+		total       int
+		total_float float64
+	)
 
 	sql_select := ""
 	sql_select += "SELECT "
-	sql_select += "count(idcrmsales) as total "
+	if tipe == "SUM" {
+		sql_select += "sum(deposit) as total "
+	} else {
+		sql_select += "count(idcrmsales) as total "
+	}
+
 	sql_select += "FROM " + configs.DB_tbl_trx_crmsales + " "
 	sql_select += "WHERE username = $1 "
 	if status == "INVALID" {
@@ -252,11 +328,21 @@ func _GetSalesStatus(username string, status string) int {
 	}
 	log.Println(sql_select)
 	row := con.QueryRowContext(ctx, sql_select, username)
-	switch e := row.Scan(&total); e {
-	case sql.ErrNoRows:
-	case nil:
-	default:
-		helpers.ErrorCheck(e)
+	if tipe == "SUM" {
+		switch e := row.Scan(&total_float); e {
+		case sql.ErrNoRows:
+		case nil:
+		default:
+			helpers.ErrorCheck(e)
+		}
+		total = int(total_float)
+	} else {
+		switch e := row.Scan(&total); e {
+		case sql.ErrNoRows:
+		case nil:
+		default:
+			helpers.ErrorCheck(e)
+		}
 	}
 	return total
 }

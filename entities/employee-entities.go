@@ -18,6 +18,14 @@ type Model_employeebydepart struct {
 	Employee_reject   int    `json:"employee_reject"`
 	Employee_invalid  int    `json:"employee_invalid"`
 }
+type Model_employeebysalesperform struct {
+	Sales_deposit     int         `json:"sales_deposit"`
+	Sales_depositsum  float32     `json:"sales_depositsum"`
+	Sales_noanswer    int         `json:"sales_noanswer"`
+	Sales_reject      int         `json:"sales_reject"`
+	Sales_invalid     int         `json:"sales_invalid"`
+	Sales_listdeposit interface{} `json:"sales_listdeposit"`
+}
 
 type Controller_employeesave struct {
 	Page              string `json:"page" validate:"required"`
@@ -32,4 +40,9 @@ type Controller_employeesave struct {
 type Controller_employeebydepart struct {
 	Page              string `json:"page" validate:"required"`
 	Employee_iddepart string `json:"employee_iddepart" validate:"required"`
+}
+type Controller_employeebysalesperform struct {
+	Page              string `json:"page" validate:"required"`
+	Employee_iddepart string `json:"employee_iddepart" validate:"required"`
+	Employee_username string `json:"employee_username" validate:"required"`
 }

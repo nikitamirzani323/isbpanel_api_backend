@@ -153,6 +153,102 @@ func EmployeeByDepart(c *fiber.Ctx) error {
 		})
 	}
 }
+func EmployeeBySalesPerformance(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_employeebysalesperform)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+
+	var obj entities.Model_employeebysalesperform
+	var arraobj []entities.Model_employeebysalesperform
+	render_page := time.Now()
+	resultredis, flag := helpers.GetRedis(Fieldemployee_home_redis + "_" + client.Employee_iddepart + "_" + client.Employee_username)
+	jsonredis := []byte(resultredis)
+	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
+	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		sales_deposit, _ := jsonparser.GetInt(value, "sales_deposit")
+		sales_depositsum, _ := jsonparser.GetFloat(value, "sales_depositsum")
+		sales_noanswer, _ := jsonparser.GetInt(value, "sales_noanswer")
+		sales_reject, _ := jsonparser.GetInt(value, "sales_reject")
+		sales_invalid, _ := jsonparser.GetInt(value, "sales_invalid")
+		listdeposit_RD, _, _, _ := jsonparser.Get(value, "sales_listdeposit")
+
+		var obj_listdeposit entities.Model_crmmemberlistdeposit
+		var arraobj_listdeposit []entities.Model_crmmemberlistdeposit
+		jsonparser.ArrayEach(listdeposit_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			crmdeposit_phone, _ := jsonparser.GetString(value, "crmdeposit_phone")
+			crmdeposit_nama, _ := jsonparser.GetString(value, "crmdeposit_nama")
+			crmdeposit_source, _ := jsonparser.GetString(value, "crmdeposit_source")
+			crmdeposit_nmwebagen, _ := jsonparser.GetString(value, "crmdeposit_nmwebagen")
+			crmdeposit_deposit, _ := jsonparser.GetFloat(value, "crmdeposit_deposit")
+			crmdeposit_iduseragen, _ := jsonparser.GetString(value, "crmdeposit_iduseragen")
+			crmdeposit_update, _ := jsonparser.GetString(value, "crmdeposit_update")
+
+			obj_listdeposit.Crmsdeposit_phone = crmdeposit_phone
+			obj_listdeposit.Crmsdeposit_nama = crmdeposit_nama
+			obj_listdeposit.Crmsdeposit_source = crmdeposit_source
+			obj_listdeposit.Crmsdeposit_nmwebagen = crmdeposit_nmwebagen
+			obj_listdeposit.Crmsdeposit_deposit = float32(crmdeposit_deposit)
+			obj_listdeposit.Crmsdeposit_iduseragen = crmdeposit_iduseragen
+			obj_listdeposit.Crmsdeposit_update = crmdeposit_update
+			arraobj_listdeposit = append(arraobj_listdeposit, obj_listdeposit)
+		})
+
+		obj.Sales_deposit = int(sales_deposit)
+		obj.Sales_depositsum = float32(sales_depositsum)
+		obj.Sales_noanswer = int(sales_noanswer)
+		obj.Sales_reject = int(sales_reject)
+		obj.Sales_invalid = int(sales_invalid)
+		obj.Sales_listdeposit = arraobj_listdeposit
+		arraobj = append(arraobj, obj)
+	})
+
+	if !flag {
+		result, err := models.Fetch_employeeBySalesPerformance(client.Employee_iddepart, client.Employee_username)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"status":  fiber.StatusBadRequest,
+				"message": err.Error(),
+				"record":  nil,
+			})
+		}
+		helpers.SetRedis(Fieldemployee_home_redis+"_"+client.Employee_iddepart+"_"+client.Employee_username, result, 60*time.Minute)
+		log.Println("EMPLOYEE BY SALES MYSQL")
+		return c.JSON(result)
+	} else {
+		log.Println("EMPLOYEE BY SALES CACHE")
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusOK,
+			"message": "Success",
+			"record":  arraobj,
+			"time":    time.Since(render_page).String(),
+		})
+	}
+}
 func EmployeeSave(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
 	client := new(entities.Controller_employeesave)

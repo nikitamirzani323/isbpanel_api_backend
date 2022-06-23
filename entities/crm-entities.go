@@ -40,6 +40,15 @@ type Model_crmdeposit struct {
 	Crmsdeposit_iduseragen string  `json:"crmdeposit_iduseragen"`
 	Crmsdeposit_create     string  `json:"crmdeposit_create"`
 }
+type Model_crmmemberlistdeposit struct {
+	Crmsdeposit_phone      string  `json:"crmdeposit_phone"`
+	Crmsdeposit_nama       string  `json:"crmdeposit_nama"`
+	Crmsdeposit_source     string  `json:"crmdeposit_source"`
+	Crmsdeposit_nmwebagen  string  `json:"crmdeposit_nmwebagen"`
+	Crmsdeposit_deposit    float32 `json:"crmdeposit_deposit"`
+	Crmsdeposit_iduseragen string  `json:"crmdeposit_iduseragen"`
+	Crmsdeposit_update     string  `json:"crmdeposit_update"`
+}
 type Model_crmisbtv struct {
 	Crmisbtv_username  string `json:"crmisbtv_username"`
 	Crmisbtv_name      string `json:"crmisbtv_name"`

@@ -171,7 +171,7 @@ func Fetch_employeeBySalesPerformance(iddepart, username string) (helpers.Respon
 			WHERE A.username=$1 
 			AND A.statuscrmsales_satu='VALID' 
 			AND A.statuscrmsales_dua='DEPOSIT'  
-			ORDER BY updatedatecrmsales DESC 
+			ORDER BY A.updatedatecrmsales DESC LIMIT 70
 	`
 
 	row, err := con.QueryContext(ctx, sql_select, username)
@@ -201,12 +201,87 @@ func Fetch_employeeBySalesPerformance(iddepart, username string) (helpers.Respon
 	}
 	defer row.Close()
 
+	//LIST NOANSWER
+	var obj_listnoanswer entities.Model_crmmemberlistnoanswer
+	var arraobj_listnoanswer []entities.Model_crmmemberlistnoanswer
+	sql_select_noanswer := `SELECT
+			B.phone , B.nama, B.source, A.statuscrmsales_dua, A.notecrmsales, 
+			A.updatecrmsales, to_char(COALESCE(A.updatedatecrmsales,now()), 'YYYY-MM-DD HH24:MI:SS')  
+			FROM ` + configs.DB_tbl_trx_crmsales + ` as A 
+			JOIN ` + configs.DB_tbl_trx_usersales + ` as B ON B.phone = A.phone  
+			WHERE A.username=$1 
+			AND A.statuscrmsales_satu='VALID' 
+			AND A.statuscrmsales_dua!='DEPOSIT'  
+			ORDER BY A.updatedatecrmsales DESC LIMIT 70
+	`
+
+	row_noanswer, err_noanswer := con.QueryContext(ctx, sql_select_noanswer, username)
+	helpers.ErrorCheck(err_noanswer)
+	for row_noanswer.Next() {
+		var (
+			phone_db, nama_db, source_db, statuscrmsales_dua_db, notecrmsales_db string
+			updatecrmsales_db, updatedatecrmsales_db                             string
+		)
+
+		err_noanswer = row_noanswer.Scan(&phone_db, &nama_db, &source_db, &statuscrmsales_dua_db, &notecrmsales_db,
+			&updatecrmsales_db, &updatedatecrmsales_db)
+
+		helpers.ErrorCheck(err_noanswer)
+
+		obj_listnoanswer.Crmnoanswer_phone = phone_db
+		obj_listnoanswer.Crmnoanswer_nama = nama_db
+		obj_listnoanswer.Crmnoanswer_source = source_db
+		obj_listnoanswer.Crmnoanswer_tipe = statuscrmsales_dua_db
+		obj_listnoanswer.Crmnoanswer_note = notecrmsales_db
+		obj_listnoanswer.Crmnoanswer_update = updatecrmsales_db + ", " + updatedatecrmsales_db
+		arraobj_listnoanswer = append(arraobj_listnoanswer, obj_listnoanswer)
+		msg = "Success"
+	}
+	defer row_noanswer.Close()
+
+	//LIST INVALID
+	var obj_listinvalid entities.Model_crmmemberlistinvalid
+	var arraobj_listinvalid []entities.Model_crmmemberlistinvalid
+	sql_select_invalid := `SELECT
+			B.phone , B.nama, B.source, 
+			A.updatecrmsales, to_char(COALESCE(A.updatedatecrmsales,now()), 'YYYY-MM-DD HH24:MI:SS')  
+			FROM ` + configs.DB_tbl_trx_crmsales + ` as A 
+			JOIN ` + configs.DB_tbl_trx_usersales + ` as B ON B.phone = A.phone  
+			WHERE A.username=$1 
+			AND A.statuscrmsales_satu='INVALID' 
+			ORDER BY A.updatedatecrmsales DESC LIMIT 70
+	`
+
+	row_invalid, err_invalid := con.QueryContext(ctx, sql_select_invalid, username)
+	helpers.ErrorCheck(err_invalid)
+	for row_invalid.Next() {
+		var (
+			phone_db, nama_db, source_db             string
+			updatecrmsales_db, updatedatecrmsales_db string
+		)
+
+		err_invalid = row_invalid.Scan(&phone_db, &nama_db, &source_db,
+			&updatecrmsales_db, &updatedatecrmsales_db)
+
+		helpers.ErrorCheck(err_invalid)
+
+		obj_listinvalid.Crminvalid_phone = phone_db
+		obj_listinvalid.Crminvalid_nama = nama_db
+		obj_listinvalid.Crminvalid_source = source_db
+		obj_listinvalid.Crminvalid_update = updatecrmsales_db + ", " + updatedatecrmsales_db
+		arraobj_listinvalid = append(arraobj_listinvalid, obj_listinvalid)
+		msg = "Success"
+	}
+	defer row_invalid.Close()
+
 	obj.Sales_deposit = _GetSalesStatus(username, "DEPOSIT", "")
 	obj.Sales_depositsum = float32(_GetSalesStatus(username, "DEPOSIT", "SUM"))
 	obj.Sales_reject = _GetSalesStatus(username, "REJECT", "")
 	obj.Sales_noanswer = _GetSalesStatus(username, "NOANSWER", "")
 	obj.Sales_invalid = _GetSalesStatus(username, "INVALID", "")
 	obj.Sales_listdeposit = arraobj_listdeposit
+	obj.Sales_listnoanswer = arraobj_listnoanswer
+	obj.Sales_listinvalid = arraobj_listinvalid
 	arraobj = append(arraobj, obj)
 
 	res.Status = fiber.StatusOK

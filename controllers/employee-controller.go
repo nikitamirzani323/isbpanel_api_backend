@@ -195,6 +195,8 @@ func EmployeeBySalesPerformance(c *fiber.Ctx) error {
 		sales_reject, _ := jsonparser.GetInt(value, "sales_reject")
 		sales_invalid, _ := jsonparser.GetInt(value, "sales_invalid")
 		listdeposit_RD, _, _, _ := jsonparser.Get(value, "sales_listdeposit")
+		listnoanswer_RD, _, _, _ := jsonparser.Get(value, "sales_listnoanswer")
+		listinvalid_RD, _, _, _ := jsonparser.Get(value, "sales_listinvalid")
 
 		var obj_listdeposit entities.Model_crmmemberlistdeposit
 		var arraobj_listdeposit []entities.Model_crmmemberlistdeposit
@@ -217,12 +219,48 @@ func EmployeeBySalesPerformance(c *fiber.Ctx) error {
 			arraobj_listdeposit = append(arraobj_listdeposit, obj_listdeposit)
 		})
 
+		var obj_listnoanswer entities.Model_crmmemberlistnoanswer
+		var arraobj_listnoanswer []entities.Model_crmmemberlistnoanswer
+		jsonparser.ArrayEach(listnoanswer_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			crmnoanswer_phone, _ := jsonparser.GetString(value, "crmnoanswer_phone")
+			crmnoanswer_nama, _ := jsonparser.GetString(value, "crmnoanswer_nama")
+			crmnoanswer_source, _ := jsonparser.GetString(value, "crmnoanswer_source")
+			crmnoanswer_tipe, _ := jsonparser.GetString(value, "crmnoanswer_tipe")
+			crmnoanswer_note, _ := jsonparser.GetString(value, "crmnoanswer_note")
+			crmnoanswer_update, _ := jsonparser.GetString(value, "crmnoanswer_update")
+
+			obj_listnoanswer.Crmnoanswer_phone = crmnoanswer_phone
+			obj_listnoanswer.Crmnoanswer_nama = crmnoanswer_nama
+			obj_listnoanswer.Crmnoanswer_source = crmnoanswer_source
+			obj_listnoanswer.Crmnoanswer_tipe = crmnoanswer_tipe
+			obj_listnoanswer.Crmnoanswer_note = crmnoanswer_note
+			obj_listnoanswer.Crmnoanswer_update = crmnoanswer_update
+			arraobj_listnoanswer = append(arraobj_listnoanswer, obj_listnoanswer)
+		})
+
+		var obj_listinvalid entities.Model_crmmemberlistinvalid
+		var arraobj_listinvalid []entities.Model_crmmemberlistinvalid
+		jsonparser.ArrayEach(listinvalid_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			crminvalid_phone, _ := jsonparser.GetString(value, "crminvalid_phone")
+			crminvalid_nama, _ := jsonparser.GetString(value, "crminvalid_nama")
+			crminvalid_source, _ := jsonparser.GetString(value, "crminvalid_source")
+			crminvalid_update, _ := jsonparser.GetString(value, "crminvalid_update")
+
+			obj_listinvalid.Crminvalid_phone = crminvalid_phone
+			obj_listinvalid.Crminvalid_nama = crminvalid_nama
+			obj_listinvalid.Crminvalid_source = crminvalid_source
+			obj_listinvalid.Crminvalid_update = crminvalid_update
+			arraobj_listinvalid = append(arraobj_listinvalid, obj_listinvalid)
+		})
+
 		obj.Sales_deposit = int(sales_deposit)
 		obj.Sales_depositsum = float32(sales_depositsum)
 		obj.Sales_noanswer = int(sales_noanswer)
 		obj.Sales_reject = int(sales_reject)
 		obj.Sales_invalid = int(sales_invalid)
 		obj.Sales_listdeposit = arraobj_listdeposit
+		obj.Sales_listnoanswer = arraobj_listnoanswer
+		obj.Sales_listinvalid = arraobj_listinvalid
 		arraobj = append(arraobj, obj)
 	})
 
@@ -236,7 +274,7 @@ func EmployeeBySalesPerformance(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Fieldemployee_home_redis+"_"+client.Employee_iddepart+"_"+client.Employee_username, result, 60*time.Minute)
+		helpers.SetRedis(Fieldemployee_home_redis+"_"+client.Employee_iddepart+"_"+client.Employee_username, result, 30*time.Minute)
 		log.Println("EMPLOYEE BY SALES MYSQL")
 		return c.JSON(result)
 	} else {

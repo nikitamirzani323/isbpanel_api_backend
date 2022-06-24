@@ -49,6 +49,20 @@ type Model_crmmemberlistdeposit struct {
 	Crmsdeposit_iduseragen string  `json:"crmdeposit_iduseragen"`
 	Crmsdeposit_update     string  `json:"crmdeposit_update"`
 }
+type Model_crmmemberlistnoanswer struct {
+	Crmnoanswer_phone  string `json:"crmnoanswer_phone"`
+	Crmnoanswer_nama   string `json:"crmnoanswer_nama"`
+	Crmnoanswer_source string `json:"crmnoanswer_source"`
+	Crmnoanswer_tipe   string `json:"crmnoanswer_tipe"`
+	Crmnoanswer_note   string `json:"crmnoanswer_note"`
+	Crmnoanswer_update string `json:"crmnoanswer_update"`
+}
+type Model_crmmemberlistinvalid struct {
+	Crminvalid_phone  string `json:"crminvalid_phone"`
+	Crminvalid_nama   string `json:"crminvalid_nama"`
+	Crminvalid_source string `json:"crminvalid_source"`
+	Crminvalid_update string `json:"crminvalid_update"`
+}
 type Model_crmisbtv struct {
 	Crmisbtv_username  string `json:"crmisbtv_username"`
 	Crmisbtv_name      string `json:"crmisbtv_name"`

@@ -19,12 +19,14 @@ type Model_employeebydepart struct {
 	Employee_invalid  int    `json:"employee_invalid"`
 }
 type Model_employeebysalesperform struct {
-	Sales_deposit     int         `json:"sales_deposit"`
-	Sales_depositsum  float32     `json:"sales_depositsum"`
-	Sales_noanswer    int         `json:"sales_noanswer"`
-	Sales_reject      int         `json:"sales_reject"`
-	Sales_invalid     int         `json:"sales_invalid"`
-	Sales_listdeposit interface{} `json:"sales_listdeposit"`
+	Sales_deposit      int         `json:"sales_deposit"`
+	Sales_depositsum   float32     `json:"sales_depositsum"`
+	Sales_noanswer     int         `json:"sales_noanswer"`
+	Sales_reject       int         `json:"sales_reject"`
+	Sales_invalid      int         `json:"sales_invalid"`
+	Sales_listdeposit  interface{} `json:"sales_listdeposit"`
+	Sales_listnoanswer interface{} `json:"sales_listnoanswer"`
+	Sales_listinvalid  interface{} `json:"sales_listinvalid"`
 }
 
 type Controller_employeesave struct {

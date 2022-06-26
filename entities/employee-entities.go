@@ -44,7 +44,9 @@ type Controller_employeebydepart struct {
 	Employee_iddepart string `json:"employee_iddepart" validate:"required"`
 }
 type Controller_employeebysalesperform struct {
-	Page              string `json:"page" validate:"required"`
-	Employee_iddepart string `json:"employee_iddepart" validate:"required"`
-	Employee_username string `json:"employee_username" validate:"required"`
+	Page               string `json:"page" validate:"required"`
+	Employee_iddepart  string `json:"employee_iddepart" validate:"required"`
+	Employee_username  string `json:"employee_username" validate:"required"`
+	Employee_startdate string `json:"employee_startdate"`
+	Employee_enddate   string `json:"employee_enddate"`
 }

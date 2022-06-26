@@ -149,7 +149,7 @@ func Fetch_employeeByDepartement(iddepart string) (helpers.Response, error) {
 
 	return res, nil
 }
-func Fetch_employeeBySalesPerformance(iddepart, username string) (helpers.Response, error) {
+func Fetch_employeeBySalesPerformance(iddepart, username, startdate, enddate string) (helpers.Response, error) {
 	var obj entities.Model_employeebysalesperform
 	var arraobj []entities.Model_employeebysalesperform
 	var res helpers.Response
@@ -157,22 +157,30 @@ func Fetch_employeeBySalesPerformance(iddepart, username string) (helpers.Respon
 	con := db.CreateCon()
 	ctx := context.Background()
 	start := time.Now()
+	tglnow_start, _ := goment.New(startdate)
+	tglnow_end, _ := goment.New(enddate)
 
 	//LIST DEPOSIT
 	var obj_listdeposit entities.Model_crmmemberlistdeposit
 	var arraobj_listdeposit []entities.Model_crmmemberlistdeposit
-	sql_select := `SELECT
-			B.phone , B.nama, B.source, 
-			C.nmwebagen, A.iduseragen, A.deposit, 
-			A.updatecrmsales, to_char(COALESCE(A.updatedatecrmsales,now()), 'YYYY-MM-DD HH24:MI:SS')  
-			FROM ` + configs.DB_tbl_trx_crmsales + ` as A 
-			JOIN ` + configs.DB_tbl_trx_usersales + ` as B ON B.phone = A.phone  
-			JOIN ` + configs.DB_tbl_mst_websiteagen + ` as C ON C.idwebagen = A.idwebagen   
-			WHERE A.username=$1 
-			AND A.statuscrmsales_satu='VALID' 
-			AND A.statuscrmsales_dua='DEPOSIT'  
-			ORDER BY A.updatedatecrmsales DESC LIMIT 70
-	`
+	sql_select := ""
+	sql_select += "SELECT "
+	sql_select += "B.phone , B.nama, B.source,  "
+	sql_select += "C.nmwebagen, A.iduseragen, A.deposit,   "
+	sql_select += "A.updatecrmsales, to_char(COALESCE(A.updatedatecrmsales,now()), 'YYYY-MM-DD HH24:MI:SS')   "
+	sql_select += "FROM " + configs.DB_tbl_trx_crmsales + " as A "
+	sql_select += "JOIN " + configs.DB_tbl_trx_usersales + " as B ON B.phone = A.phone "
+	sql_select += "JOIN " + configs.DB_tbl_mst_websiteagen + " as C ON C.idwebagen = A.idwebagen "
+	sql_select += "WHERE A.username=$1  "
+	sql_select += "AND A.statuscrmsales_satu='VALID'  "
+	sql_select += "AND A.statuscrmsales_dua='DEPOSIT'  "
+	if startdate != "" {
+		sql_select += "AND A.updatedatecrmsales >='" + tglnow_start.Format("YYYY-MM-DD") + " 00:00:00' "
+		sql_select += "AND A.updatedatecrmsales <='" + tglnow_end.Format("YYYY-MM-DD") + " 23:59:59' "
+		sql_select += "ORDER BY A.updatedatecrmsales DESC   "
+	} else {
+		sql_select += "ORDER BY A.updatedatecrmsales DESC LIMIT 70  "
+	}
 
 	row, err := con.QueryContext(ctx, sql_select, username)
 	helpers.ErrorCheck(err)
@@ -204,16 +212,22 @@ func Fetch_employeeBySalesPerformance(iddepart, username string) (helpers.Respon
 	//LIST NOANSWER
 	var obj_listnoanswer entities.Model_crmmemberlistnoanswer
 	var arraobj_listnoanswer []entities.Model_crmmemberlistnoanswer
-	sql_select_noanswer := `SELECT
-			B.phone , B.nama, B.source, A.statuscrmsales_dua, A.notecrmsales, 
-			A.updatecrmsales, to_char(COALESCE(A.updatedatecrmsales,now()), 'YYYY-MM-DD HH24:MI:SS')  
-			FROM ` + configs.DB_tbl_trx_crmsales + ` as A 
-			JOIN ` + configs.DB_tbl_trx_usersales + ` as B ON B.phone = A.phone  
-			WHERE A.username=$1 
-			AND A.statuscrmsales_satu='VALID' 
-			AND A.statuscrmsales_dua!='DEPOSIT'  
-			ORDER BY A.updatedatecrmsales DESC LIMIT 70
-	`
+	sql_select_noanswer := ""
+	sql_select_noanswer += "SELECT "
+	sql_select_noanswer += "B.phone , B.nama, B.source, A.statuscrmsales_dua, A.notecrmsales,  "
+	sql_select_noanswer += "A.updatecrmsales, to_char(COALESCE(A.updatedatecrmsales,now()), 'YYYY-MM-DD HH24:MI:SS')  "
+	sql_select_noanswer += "FROM " + configs.DB_tbl_trx_crmsales + " as A "
+	sql_select_noanswer += "JOIN " + configs.DB_tbl_trx_usersales + " as B ON B.phone = A.phone "
+	sql_select_noanswer += "WHERE A.username=$1 "
+	sql_select_noanswer += "AND A.statuscrmsales_satu='VALID' "
+	sql_select_noanswer += "AND A.statuscrmsales_dua!='DEPOSIT' "
+	if startdate != "" {
+		sql_select_noanswer += "AND A.updatedatecrmsales >='" + tglnow_start.Format("YYYY-MM-DD") + " 00:00:00' "
+		sql_select_noanswer += "AND A.updatedatecrmsales <='" + tglnow_end.Format("YYYY-MM-DD") + " 23:59:59' "
+		sql_select_noanswer += "ORDER BY A.updatedatecrmsales DESC   "
+	} else {
+		sql_select_noanswer += "ORDER BY A.updatedatecrmsales DESC LIMIT 70  "
+	}
 
 	row_noanswer, err_noanswer := con.QueryContext(ctx, sql_select_noanswer, username)
 	helpers.ErrorCheck(err_noanswer)
@@ -242,15 +256,21 @@ func Fetch_employeeBySalesPerformance(iddepart, username string) (helpers.Respon
 	//LIST INVALID
 	var obj_listinvalid entities.Model_crmmemberlistinvalid
 	var arraobj_listinvalid []entities.Model_crmmemberlistinvalid
-	sql_select_invalid := `SELECT
-			B.phone , B.nama, B.source, 
-			A.updatecrmsales, to_char(COALESCE(A.updatedatecrmsales,now()), 'YYYY-MM-DD HH24:MI:SS')  
-			FROM ` + configs.DB_tbl_trx_crmsales + ` as A 
-			JOIN ` + configs.DB_tbl_trx_usersales + ` as B ON B.phone = A.phone  
-			WHERE A.username=$1 
-			AND A.statuscrmsales_satu='INVALID' 
-			ORDER BY A.updatedatecrmsales DESC LIMIT 70
-	`
+	sql_select_invalid := ""
+	sql_select_invalid += "SELECT "
+	sql_select_invalid += "B.phone , B.nama, B.source,  "
+	sql_select_invalid += "A.updatecrmsales, to_char(COALESCE(A.updatedatecrmsales,now()), 'YYYY-MM-DD HH24:MI:SS')  "
+	sql_select_invalid += "FROM " + configs.DB_tbl_trx_crmsales + " as A "
+	sql_select_invalid += "JOIN " + configs.DB_tbl_trx_usersales + " as B ON B.phone = A.phone "
+	sql_select_invalid += "WHERE A.username=$1  "
+	sql_select_invalid += "AND A.statuscrmsales_satu='INVALID'   "
+	if startdate != "" {
+		sql_select_invalid += "AND A.updatedatecrmsales >='" + tglnow_start.Format("YYYY-MM-DD") + " 00:00:00' "
+		sql_select_invalid += "AND A.updatedatecrmsales <='" + tglnow_end.Format("YYYY-MM-DD") + " 23:59:59' "
+		sql_select_invalid += "ORDER BY A.updatedatecrmsales DESC   "
+	} else {
+		sql_select_invalid += "ORDER BY A.updatedatecrmsales DESC LIMIT 70  "
+	}
 
 	row_invalid, err_invalid := con.QueryContext(ctx, sql_select_invalid, username)
 	helpers.ErrorCheck(err_invalid)

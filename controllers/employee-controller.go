@@ -265,7 +265,7 @@ func EmployeeBySalesPerformance(c *fiber.Ctx) error {
 	})
 
 	if !flag {
-		result, err := models.Fetch_employeeBySalesPerformance(client.Employee_iddepart, client.Employee_username)
+		result, err := models.Fetch_employeeBySalesPerformance(client.Employee_iddepart, client.Employee_username, client.Employee_startdate, client.Employee_enddate)
 		if err != nil {
 			c.Status(fiber.StatusBadRequest)
 			return c.JSON(fiber.Map{

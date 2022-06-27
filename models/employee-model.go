@@ -133,10 +133,10 @@ func Fetch_employeeByDepartement(iddepart string) (helpers.Response, error) {
 
 		obj.Employee_username = username_db
 		obj.Employee_name = nmemployee_db
-		obj.Employee_deposit = _GetSalesStatus(username_db, "DEPOSIT", "")
-		obj.Employee_reject = _GetSalesStatus(username_db, "REJECT", "")
-		obj.Employee_noanswer = _GetSalesStatus(username_db, "NOANSWER", "")
-		obj.Employee_invalid = _GetSalesStatus(username_db, "INVALID", "")
+		obj.Employee_deposit = _GetSalesStatus(username_db, "DEPOSIT", "", "", "")
+		obj.Employee_reject = _GetSalesStatus(username_db, "REJECT", "", "", "")
+		obj.Employee_noanswer = _GetSalesStatus(username_db, "NOANSWER", "", "", "")
+		obj.Employee_invalid = _GetSalesStatus(username_db, "INVALID", "", "", "")
 		arraobj = append(arraobj, obj)
 		msg = "Success"
 	}
@@ -294,11 +294,11 @@ func Fetch_employeeBySalesPerformance(iddepart, username, startdate, enddate str
 	}
 	defer row_invalid.Close()
 
-	obj.Sales_deposit = _GetSalesStatus(username, "DEPOSIT", "")
-	obj.Sales_depositsum = float32(_GetSalesStatus(username, "DEPOSIT", "SUM"))
-	obj.Sales_reject = _GetSalesStatus(username, "REJECT", "")
-	obj.Sales_noanswer = _GetSalesStatus(username, "NOANSWER", "")
-	obj.Sales_invalid = _GetSalesStatus(username, "INVALID", "")
+	obj.Sales_deposit = _GetSalesStatus(username, "DEPOSIT", "", startdate, enddate)
+	obj.Sales_depositsum = float32(_GetSalesStatus(username, "DEPOSIT", "SUM", startdate, enddate))
+	obj.Sales_reject = _GetSalesStatus(username, "REJECT", "", startdate, enddate)
+	obj.Sales_noanswer = _GetSalesStatus(username, "NOANSWER", "", startdate, enddate)
+	obj.Sales_invalid = _GetSalesStatus(username, "INVALID", "", startdate, enddate)
 	obj.Sales_listdeposit = arraobj_listdeposit
 	obj.Sales_listnoanswer = arraobj_listnoanswer
 	obj.Sales_listinvalid = arraobj_listinvalid
@@ -397,10 +397,11 @@ func Save_employee(admin, username, password, iddepart, name, phone, status, sDa
 
 	return res, nil
 }
-func _GetSalesStatus(username string, status, tipe string) int {
+func _GetSalesStatus(username string, status, tipe, start, end string) int {
 	con := db.CreateCon()
 	ctx := context.Background()
-
+	tglnow_start, _ := goment.New(start)
+	tglnow_end, _ := goment.New(end)
 	var (
 		total       int
 		total_float float64
@@ -409,13 +410,17 @@ func _GetSalesStatus(username string, status, tipe string) int {
 	sql_select := ""
 	sql_select += "SELECT "
 	if tipe == "SUM" {
-		sql_select += "sum(deposit) as total "
+		sql_select += "COALESCE(sum(deposit),0) as total "
 	} else {
-		sql_select += "count(idcrmsales) as total "
+		sql_select += "COALESCE(count(idcrmsales),0) as total "
 	}
 
 	sql_select += "FROM " + configs.DB_tbl_trx_crmsales + " "
 	sql_select += "WHERE username = $1 "
+	if start != "" {
+		sql_select += "AND updatedatecrmsales >='" + tglnow_start.Format("YYYY-MM-DD") + " 00:00:00' "
+		sql_select += "AND updatedatecrmsales <='" + tglnow_end.Format("YYYY-MM-DD") + " 23:59:59' "
+	}
 	if status == "INVALID" {
 		sql_select += "AND statuscrmsales_satu = '" + status + "' "
 	} else {

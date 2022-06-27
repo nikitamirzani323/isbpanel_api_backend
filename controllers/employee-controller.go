@@ -185,7 +185,13 @@ func EmployeeBySalesPerformance(c *fiber.Ctx) error {
 	var obj entities.Model_employeebysalesperform
 	var arraobj []entities.Model_employeebysalesperform
 	render_page := time.Now()
-	resultredis, flag := helpers.GetRedis(Fieldemployee_home_redis + "_" + client.Employee_iddepart + "_" + client.Employee_username)
+	string_redis := ""
+	if client.Employee_startdate != "" {
+		string_redis = Fieldemployee_home_redis + "_" + client.Employee_iddepart + "_" + client.Employee_username + "_" + client.Employee_startdate + "_" + client.Employee_enddate
+	} else {
+		string_redis = Fieldemployee_home_redis + "_" + client.Employee_iddepart + "_" + client.Employee_username
+	}
+	resultredis, flag := helpers.GetRedis(string_redis)
 	jsonredis := []byte(resultredis)
 	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
 	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
@@ -274,7 +280,7 @@ func EmployeeBySalesPerformance(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Fieldemployee_home_redis+"_"+client.Employee_iddepart+"_"+client.Employee_username, result, 30*time.Minute)
+		helpers.SetRedis(string_redis, result, 30*time.Minute)
 		log.Println("EMPLOYEE BY SALES MYSQL")
 		return c.JSON(result)
 	} else {

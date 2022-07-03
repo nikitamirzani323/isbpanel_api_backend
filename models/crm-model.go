@@ -144,7 +144,7 @@ func Fetch_crm(search, status string, page int) (helpers.Responsemovie, error) {
 				FROM ` + configs.DB_tbl_trx_crmsales + ` as A  
 				JOIN ` + configs.DB_tbl_mst_employee + ` as B ON B.username = A.username   
 				WHERE A.phone = $1 
-				ORDER BY A.updatedatecrmsales DESC     
+				ORDER BY A.updatedatecrmsales DESC LIMIT 5      
 		`
 		total_pic := 0
 		var obj_crmsales entities.Model_crmsales_simple

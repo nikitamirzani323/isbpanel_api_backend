@@ -99,7 +99,11 @@ func AdminruleSave(c *fiber.Ctx) error {
 		})
 	}
 
+	_deleteredis_adminrule()
+	return c.JSON(result)
+}
+func _deleteredis_adminrule() {
 	val_master := helpers.DeleteRedis(Fieldadminrule_home_redis)
 	log.Printf("Redis Delete BACKEND ADMIN RULE : %d", val_master)
-	return c.JSON(result)
+
 }

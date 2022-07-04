@@ -24,7 +24,7 @@ func Fetch_bannerHome() (helpers.Response, error) {
 	start := time.Now()
 
 	sql_select := `SELECT 
-		idbanner , nmbanner, urlbanner, devicebanner, posisibanner, displaybanner, statusbanner, 
+		idbanner , nmbanner, urlbanner, urlwebsite, devicebanner, posisibanner, displaybanner, statusbanner, 
 		createbanner, to_char(COALESCE(createdatebanner,now()), 'YYYY-MM-DD HH24:MI:SS'), 
 		updatebanner, to_char(COALESCE(updatedatebanner,now()), 'YYYY-MM-DD HH24:MI:SS') 
 		FROM ` + configs.DB_tbl_mst_banner + `  
@@ -35,12 +35,12 @@ func Fetch_bannerHome() (helpers.Response, error) {
 	helpers.ErrorCheck(err)
 	for row.Next() {
 		var (
-			idbanner_db, displaybanner_db                                                int
-			nmbanner_db, urlbanner_db, devicebanner_db, posisibanner_db, statusbanner_db string
-			createbanner_db, createdatebanner_db, updatebanner_db, updatedatebanner_db   string
+			idbanner_db, displaybanner_db                                                               int
+			nmbanner_db, urlbanner_db, urlwebsite_db, devicebanner_db, posisibanner_db, statusbanner_db string
+			createbanner_db, createdatebanner_db, updatebanner_db, updatedatebanner_db                  string
 		)
 
-		err = row.Scan(&idbanner_db, &nmbanner_db, &urlbanner_db, &devicebanner_db, &posisibanner_db, &displaybanner_db,
+		err = row.Scan(&idbanner_db, &nmbanner_db, &urlbanner_db, &urlwebsite_db, &devicebanner_db, &posisibanner_db, &displaybanner_db,
 			&statusbanner_db, &createbanner_db, &createdatebanner_db, &updatebanner_db, &updatedatebanner_db)
 
 		helpers.ErrorCheck(err)
@@ -56,6 +56,7 @@ func Fetch_bannerHome() (helpers.Response, error) {
 		obj.Banner_id = idbanner_db
 		obj.Banner_name = nmbanner_db
 		obj.Banner_url = urlbanner_db
+		obj.Banner_urlwebsite = urlwebsite_db
 		obj.Banner_device = devicebanner_db
 		obj.Banner_posisi = posisibanner_db
 		obj.Banner_display = displaybanner_db
@@ -74,7 +75,7 @@ func Fetch_bannerHome() (helpers.Response, error) {
 
 	return res, nil
 }
-func Save_banner(admin, sdata, nmbanner, urlbanner, devicebanner, posisibanner, status string, idrecord, display int) (helpers.Response, error) {
+func Save_banner(admin, sdata, nmbanner, urlbanner, urlwebsite, devicebanner, posisibanner, status string, idrecord, display int) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"
 	tglnow, _ := goment.New()
@@ -84,20 +85,20 @@ func Save_banner(admin, sdata, nmbanner, urlbanner, devicebanner, posisibanner, 
 		sql_insert := `
 			insert into
 			` + configs.DB_tbl_mst_banner + ` (
-				idbanner , nmbanner, urlbanner, 
+				idbanner , nmbanner, urlbanner, urlwebsite, 
 				devicebanner, posisibanner, displaybanner, statusbanner, 
 				createbanner, createdatebanner
 			) values (
-				$1 ,$2, $3, 
-				$4, $5, $6, $7, 
-				$8, $9 
+				$1 ,$2, $3, $4,
+				$5, $6, $7, $8,
+				$9, $10  
 			)
 		`
 		field_column := configs.DB_tbl_mst_banner + tglnow.Format("YYYY")
 		idrecord_counter := Get_counter(field_column)
 		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_mst_banner, "INSERT",
 			tglnow.Format("YY")+strconv.Itoa(idrecord_counter),
-			nmbanner, urlbanner, devicebanner, posisibanner, display, status,
+			nmbanner, urlbanner, urlwebsite, devicebanner, posisibanner, display, status,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 
 		if flag_insert {
@@ -110,14 +111,14 @@ func Save_banner(admin, sdata, nmbanner, urlbanner, devicebanner, posisibanner, 
 		sql_update := `
 				UPDATE 
 				` + configs.DB_tbl_mst_banner + `  
-				SET nmbanner=$1, urlbanner=$2, devicebanner=$3,
-				posisibanner=$4, displaybanner=$5, statusbanner=$6,
-				updatebanner=$7, updatedatebanner=$8 
-				WHERE idbanner=$9  
+				SET nmbanner=$1, urlbanner=$2, urlwebsite=$3, devicebanner=$4,
+				posisibanner=$5, displaybanner=$6, statusbanner=$7,
+				updatebanner=$8, updatedatebanner=$9 
+				WHERE idbanner=$10  
 			`
 
 		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_mst_banner, "UPDATE",
-			nmbanner, urlbanner, devicebanner, posisibanner, display, status,
+			nmbanner, urlbanner, urlwebsite, devicebanner, posisibanner, display, status,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
 
 		if flag_update {

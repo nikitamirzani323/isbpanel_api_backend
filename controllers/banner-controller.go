@@ -28,6 +28,7 @@ func Bannerhome(c *fiber.Ctx) error {
 		banner_id, _ := jsonparser.GetInt(value, "banner_id")
 		banner_name, _ := jsonparser.GetString(value, "banner_name")
 		banner_url, _ := jsonparser.GetString(value, "banner_url")
+		banner_urlwebsite, _ := jsonparser.GetString(value, "banner_urlwebsite")
 		banner_posisi, _ := jsonparser.GetString(value, "banner_posisi")
 		banner_device, _ := jsonparser.GetString(value, "banner_device")
 		banner_display, _ := jsonparser.GetInt(value, "banner_display")
@@ -38,6 +39,7 @@ func Bannerhome(c *fiber.Ctx) error {
 		obj.Banner_id = int(banner_id)
 		obj.Banner_name = banner_name
 		obj.Banner_url = banner_url
+		obj.Banner_urlwebsite = banner_urlwebsite
 		obj.Banner_posisi = banner_posisi
 		obj.Banner_device = banner_device
 		obj.Banner_display = int(banner_display)
@@ -105,7 +107,7 @@ func Bannersave(c *fiber.Ctx) error {
 
 	result, err := models.Save_banner(
 		client_admin, client.Sdata,
-		client.Banner_name, client.Banner_url, client.Banner_device, client.Banner_posisi, client.Banner_status,
+		client.Banner_name, client.Banner_url, client.Banner_urlwebsite, client.Banner_device, client.Banner_posisi, client.Banner_status,
 		client.Banner_id, client.Banner_display)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)

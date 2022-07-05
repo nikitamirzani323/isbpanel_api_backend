@@ -152,7 +152,7 @@ func Newssave(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	_deleteredis_news()
+	_deleteredis_news(0, "")
 	return c.JSON(result)
 }
 func Newsdelete(c *fiber.Ctx) error {
@@ -198,7 +198,7 @@ func Newsdelete(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	_deleteredis_news()
+	_deleteredis_news(0, "")
 	return c.JSON(result)
 }
 func Categoryhome(c *fiber.Ctx) error {
@@ -297,7 +297,7 @@ func Categorysave(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	_deleteredis_news()
+	_deleteredis_news(0, "")
 	return c.JSON(result)
 }
 func Categorydelete(c *fiber.Ctx) error {
@@ -343,13 +343,15 @@ func Categorydelete(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
-	_deleteredis_news()
+	_deleteredis_news(0, "")
 	return c.JSON(result)
 }
-func _deleteredis_news() {
+func _deleteredis_news(page int, search string) {
 	//MASTER
-	val_news := helpers.DeleteRedis(Fieldnews_home_redis + "_")
-	log.Printf("Redis Delete BACKEND NEWS : %d", val_news)
+	for i := 0; i <= 10000; i = i + 50 {
+		val_news := helpers.DeleteRedis(Fieldnews_home_redis + "_" + strconv.Itoa(i) + "_" + search)
+		log.Printf("Redis Delete BACKEND NEWS : %d", val_news)
+	}
 	val_category := helpers.DeleteRedis(Fieldcategory_home_redis)
 	log.Printf("Redis Delete BACKEND NEWS CATEGORY : %d", val_category)
 

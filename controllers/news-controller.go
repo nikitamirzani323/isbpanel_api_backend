@@ -350,7 +350,7 @@ func _deleteredis_news(page int, search string) {
 	//MASTER
 	for i := 0; i <= 10000; i = i + 50 {
 		val_news := helpers.DeleteRedis(Fieldnews_home_redis + "_" + strconv.Itoa(i) + "_" + search)
-		log.Printf("Redis Delete BACKEND NEWS : %d", val_news)
+		log.Printf("Redis Delete BACKEND NEWS - %d : %d", i, val_news)
 	}
 	val_category := helpers.DeleteRedis(Fieldcategory_home_redis)
 	log.Printf("Redis Delete BACKEND NEWS CATEGORY : %d", val_category)

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"log"
+	"strconv"
 	"time"
 
 	"bitbucket.org/isbtotogroup/isbpanel_api_backend/entities"
@@ -50,7 +51,7 @@ func Tafsirmimpihome(c *fiber.Ctx) error {
 	var obj entities.Model_tafsirmimpi
 	var arraobj []entities.Model_tafsirmimpi
 	render_page := time.Now()
-	resultredis, flag := helpers.GetRedis(Field_tafsirmimpihome_redis + "_" + client.Tafsirmimpi_search)
+	resultredis, flag := helpers.GetRedis(Field_tafsirmimpihome_redis + "_" + strconv.Itoa(client.Tafsirmimpi_page) + "_" + client.Tafsirmimpi_search)
 	jsonredis := []byte(resultredis)
 	message_RD, _ := jsonparser.GetString(jsonredis, "message")
 	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
@@ -79,7 +80,7 @@ func Tafsirmimpihome(c *fiber.Ctx) error {
 		arraobj = append(arraobj, obj)
 	})
 	if !flag {
-		result, err := models.Fetch_tafsirmimpiHome(client.Tafsirmimpi_search)
+		result, err := models.Fetch_tafsirmimpiHome(client.Tafsirmimpi_search, client.Tafsirmimpi_page)
 		if err != nil {
 			c.Status(fiber.StatusBadRequest)
 			return c.JSON(fiber.Map{
@@ -88,7 +89,7 @@ func Tafsirmimpihome(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Field_tafsirmimpihome_redis+"_"+client.Tafsirmimpi_search, result, 3*time.Minute)
+		helpers.SetRedis(Field_tafsirmimpihome_redis+"_"+strconv.Itoa(client.Tafsirmimpi_page)+"_"+client.Tafsirmimpi_search, result, 30*time.Minute)
 		log.Println("TAFSIR MIMPI MYSQL")
 		return c.JSON(result)
 	} else {
@@ -147,7 +148,13 @@ func Tafsirmimpisave(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
+	_deleteredis_tafsirmimpi(client.Tafsirmimpi_page, client.Tafsirmimpi_search)
 	val_tafsirmimpi := helpers.DeleteRedis(Field_tafsirmimpihome_redis + "_")
 	log.Printf("Redis Delete BACKEND TAFSIRMIMPI : %d", val_tafsirmimpi)
 	return c.JSON(result)
+}
+func _deleteredis_tafsirmimpi(page int, search string) {
+	val_tafsirmimpi := helpers.DeleteRedis(Field_tafsirmimpihome_redis + "_" + strconv.Itoa(page) + "_" + search)
+	log.Printf("Redis Delete BACKEND TAFSIRMIMPI : %d", val_tafsirmimpi)
+
 }

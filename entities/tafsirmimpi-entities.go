@@ -14,10 +14,13 @@ type Model_tafsirmimpi struct {
 }
 type Controller_tafsirmimpi struct {
 	Tafsirmimpi_search string `json:"tafsirmimpi_search"`
+	Tafsirmimpi_page   int    `json:"tafsirmimpi_page"`
 }
 type Controller_tafsirmimpisave struct {
 	Sdata                 string `json:"sdata" validate:"required"`
 	Page                  string `json:"page" validate:"required"`
+	Tafsirmimpi_page      int    `json:"tafsirmimpi_page"`
+	Tafsirmimpi_search    string `json:"tafsirmimpi_search"`
 	Tafsirmimpi_id        int    `json:"tafsirmimpi_id"`
 	Tafsirmimpi_mimpi     string `json:"tafsirmimpi_mimpi" validate:"required"`
 	Tafsirmimpi_artimimpi string `json:"tafsirmimpi_artimimpi" validate:"required"`

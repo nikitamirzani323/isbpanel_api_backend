@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"strconv"
 	"strings"
@@ -15,27 +16,48 @@ import (
 	"github.com/nleeper/goment"
 )
 
-func Fetch_tafsirmimpiHome(search string) (helpers.Response, error) {
+func Fetch_tafsirmimpiHome(search string, page int) (helpers.Responsemovie, error) {
 	var obj entities.Model_tafsirmimpi
 	var arraobj []entities.Model_tafsirmimpi
-	var res helpers.Response
+	var res helpers.Responsemovie
 	msg := "Data Not Found"
 	con := db.CreateCon()
 	ctx := context.Background()
 	start := time.Now()
 
+	perpage := 50
+	totalrecord := 0
+	offset := page
+	sql_selectcount := ""
+	sql_selectcount += ""
+	sql_selectcount += "SELECT "
+	sql_selectcount += "COUNT(idtafsirmimpi) as total  "
+	sql_selectcount += "FROM " + configs.DB_tbl_mst_tafsirmimpi + "  "
+	if search != "" {
+		sql_selectcount += "WHERE LOWER(mimpi) LIKE '%" + strings.ToLower(search) + "%' "
+		sql_selectcount += "OR LOWER(artimimpi) LIKE '%" + strings.ToLower(search) + "%' "
+	}
+	row_selectcount := con.QueryRowContext(ctx, sql_selectcount)
+	switch e_selectcount := row_selectcount.Scan(&totalrecord); e_selectcount {
+	case sql.ErrNoRows:
+	case nil:
+	default:
+		helpers.ErrorCheck(e_selectcount)
+	}
+
 	sql_select := ""
 	sql_select += ""
 	sql_select += "SELECT "
 	sql_select += "idtafsirmimpi , mimpi, artimimpi, angka2d, angka3d, angka4d,statustafsirmimpi, "
-	sql_select += "createtafsirmimpi , createdatetafsirmimpi, updatetafsirmimpi, updatedatetafsirmimpi "
+	sql_select += "createtafsirmimpi , to_char(COALESCE(createdatetafsirmimpi,now()), 'YYYY-MM-DD HH24:MI:SS'), "
+	sql_select += "updatetafsirmimpi, to_char(COALESCE(updatedatetafsirmimpi,now()), 'YYYY-MM-DD HH24:MI:SS') "
 	sql_select += "FROM " + configs.DB_tbl_mst_tafsirmimpi + " "
 	if search == "" {
-		sql_select += "ORDER BY random() LIMIT 500  "
+		sql_select += "ORDER BY createtafsirmimpi DESC  OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(perpage)
 	} else {
 		sql_select += "WHERE LOWER(mimpi) LIKE '%" + strings.ToLower(search) + "%' "
 		sql_select += "OR LOWER(artimimpi) LIKE '%" + strings.ToLower(search) + "%' "
-		sql_select += "ORDER BY mimpi ASC LIMIT 500  "
+		sql_select += "ORDER BY createtafsirmimpi DESC LIMIT " + strconv.Itoa(perpage)
 	}
 
 	row, err := con.QueryContext(ctx, sql_select)
@@ -58,7 +80,7 @@ func Fetch_tafsirmimpiHome(search string) (helpers.Response, error) {
 		if createtafsirmimpi_db != "" {
 			create = createtafsirmimpi_db + ", " + createdatetafsirmimpi_db
 		}
-		if updatetafsirmimpi_db != "0000-00-00" {
+		if updatetafsirmimpi_db != "" {
 			update = updatetafsirmimpi_db + ", " + updatedatetafsirmimpi_db
 		}
 		if statustafsirmimpi_db == "Y" {
@@ -83,6 +105,8 @@ func Fetch_tafsirmimpiHome(search string) (helpers.Response, error) {
 	res.Status = fiber.StatusOK
 	res.Message = msg
 	res.Record = arraobj
+	res.Perpage = perpage
+	res.Totalrecord = totalrecord
 	res.Time = time.Since(start).String()
 
 	return res, nil

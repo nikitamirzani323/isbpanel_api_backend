@@ -53,6 +53,8 @@ func Tafsirmimpihome(c *fiber.Ctx) error {
 	render_page := time.Now()
 	resultredis, flag := helpers.GetRedis(Field_tafsirmimpihome_redis + "_" + strconv.Itoa(client.Tafsirmimpi_page) + "_" + client.Tafsirmimpi_search)
 	jsonredis := []byte(resultredis)
+	perpage_RD, _ := jsonparser.GetInt(jsonredis, "perpage")
+	totalrecord_RD, _ := jsonparser.GetInt(jsonredis, "totalrecord")
 	message_RD, _ := jsonparser.GetString(jsonredis, "message")
 	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
 	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
@@ -95,10 +97,12 @@ func Tafsirmimpihome(c *fiber.Ctx) error {
 	} else {
 		log.Println("TAFSIR MIMPI CACHE")
 		return c.JSON(fiber.Map{
-			"status":  fiber.StatusOK,
-			"message": message_RD,
-			"record":  arraobj,
-			"time":    time.Since(render_page).String(),
+			"status":      fiber.StatusOK,
+			"message":     message_RD,
+			"record":      arraobj,
+			"perpage":     perpage_RD,
+			"totalrecord": totalrecord_RD,
+			"time":        time.Since(render_page).String(),
 		})
 	}
 }

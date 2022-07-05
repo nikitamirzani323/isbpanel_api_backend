@@ -118,7 +118,6 @@ func Save_tafsirmimpi(admin, mimpi, artimimpi, angka2d, angka3d, angka4d, status
 	ctx := context.Background()
 	tglnow, _ := goment.New()
 	render_page := time.Now()
-	flag := false
 
 	if sData == "New" {
 		sql_insert := `
@@ -146,7 +145,6 @@ func Save_tafsirmimpi(admin, mimpi, artimimpi, angka2d, angka3d, angka4d, status
 		insert, e := res_newrecord.RowsAffected()
 		helpers.ErrorCheck(e)
 		if insert > 0 {
-			flag = true
 			msg = "Succes"
 			log.Println("Data Berhasil di save")
 		}
@@ -172,7 +170,6 @@ func Save_tafsirmimpi(admin, mimpi, artimimpi, angka2d, angka3d, angka4d, status
 
 		defer stmt_record.Close()
 		if update_record > 0 {
-			flag = true
 			msg = "Succes"
 			log.Printf("Update PASARAN Success : %d\n", idrecord)
 		} else {
@@ -180,17 +177,10 @@ func Save_tafsirmimpi(admin, mimpi, artimimpi, angka2d, angka3d, angka4d, status
 		}
 	}
 
-	if flag {
-		res.Status = fiber.StatusOK
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	} else {
-		res.Status = fiber.StatusBadRequest
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	}
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
 
 	return res, nil
 }

@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "dazzling-pillar-328210",
+  "private_key_id": "97e6beef652b49c118b0307acca84bde4ff880e3",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDDtB4Y87xVjBI3\nIb6e91mNUuLTg/bqXFkoavHT4zPlN3A31gm4O11U0HNTbm9pb3HapCpr0V7lJalg\ni+pZ62PeoV/zzzU7SUOR62M6oo8BgFzzWpL4mtOHD20lcz6OX0qmatCWuUr3HXA5\nzwDIQIsVHBcnzUvcpnuRth3zpK2uZfDtGZrI45082TAql/qRu416n8QOtuiOQYG1\nVMFrALJEW8Xqcukp7G0R4o/eVSQgM5lU4zcmyL5wXAigg9+QJ7dp/geHGGYSvgqQ\nEGa03kGCnX80uJtk1LYSmIZ4X9JMf3r1/KPEX1f2HYkeWGfD8JBWiAhhjU+IE4TW\n+UMW7uWNAgMBAAECggEAQkg8U14lwOGef761lZiX44YZneLZm3molshV3Fpcxrr2\njmq3QwcULrgk/zJtmIuux4sHdRnl5n1RdwocVtUjL5F/co+Q62H+eSr8oizRe4Qy\ntxdLpNinYNyILoFwQ/8hROjzecELE1QMoP+rt6cok/8+FnRxR6u5OVoxncX+Lwzt\n7Y+MakwybDh4CL57reZLugHC7IjwJ5d17WFnCiiX5XxlbQztwTntczmoUg9GBwPV\nNJqJls9G+CexVqUyTzgtve7ie+aMCSNyDgcl6BOHUqd0QJi3iK7MaC7hh5r74bI/\nOmjLHq+GrIfEuRE8c5chKPdUADiVjXAXZC4cQfC4rwKBgQD+BHZ26XHhY3mx3b+5\npySifFBl6s9/zvhy1plH3uX9ofWPbFL4WWHV2bFqrDK+9oVyHruyvbO4mWJsaDMQ\n2HrV4FSI1HqXJGms7U7ltViXka4OBm3H7ef3rORs58Axk3ugcU/LWZVJxp+XAAGa\nN0FltPNcydYwxRvkKxoXX/dGNwKBgQDFOyQv4vdnG9jDewM13meisW9DlkmbkY3n\n/LiTOEXLJv6sWMmHgHaVhbfI+/SSeVk4EvOnwZW26AIHl3E76RKiahgGlgxIAAuE\n1oJqz6dZH/cSj4ZI4wF315v8qCDb8cNvV8Ifwz+WbyC96imk1UM+/3rKMiDrDq0i\nvFACDMaQWwKBgQDMB4mfuaJfByeYViTJWhdy66coNZK1dejZVMWJlN/m+U/kA34h\nPKn4uwJmTCn2eMx2/XiF+RmCDLGhoZBi137Si31a6lANVpIK9BGLMD4YgErtuPw0\nukK4DYbscrlNGMkT9e/BxhLDT2agQsEGvZsptk5DGVuRkMD2ZChw3gQfwQKBgBLm\nP+l2zk5LFNJmj0AyN6wXZJoNZLBLmlWImgdBdS6qZe0N9QHPBY3+akYQHreKeUou\nRrrkifwk70za7jbXdrmpgPPgnPypRHFOPOEPVPHtZjeZGT0Sw6lAN+pWEhABcsDQ\noAF7LDS2IWURczwgU3lN8e4+L3lWxrB1axVHNB/RAoGBAPM7y2w6HGsUktX/5Rgh\nJcRfByGkYFhgh44DO0pFIk0V8RA0e1fB40Vwgf2Fk25WdInGcrWS2C7Mxi2WdzCM\nbkm+sEcvHJVERTDiuJDqvZe+/VquCgN2m5JXPorb3rSZ/7ypNZjEyPhe4UZZKxs1\njrkY9mhb0y6p0q2XJr81UyhU\n-----END PRIVATE KEY-----\n",
+  "client_email": "db-isbpanel-stagging@dazzling-pillar-328210.iam.gserviceaccount.com",
+  "client_id": "103965273501927972171",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/db-isbpanel-stagging%40dazzling-pillar-328210.iam.gserviceaccount.com"
+}

@@ -211,3 +211,14 @@ type Controller_genredelete struct {
 	Sdata    string `json:"sdata" validate:"required"`
 	Genre_id int    `json:"genre_id" validate:"required"`
 }
+type Controller_moviebannersave struct {
+	Page                       string `json:"page" validate:"required"`
+	Sdata                      string `json:"sdata" validate:"required"`
+	Movie_page                 int    `json:"movie_page" `
+	Moviebanner_id             int    `json:"moviebanner_id" `
+	Moviebanner_name           string `json:"moviebanner_name" validate:"required"`
+	Moviebanner_urlimg         string `json:"moviebanner_urlimg" validate:"required"`
+	Moviebanner_urldestination string `json:"moviebanner_urldestination" validate:"required"`
+	Moviebanner_status         string `json:"moviebanner_status" validate:"required"`
+	Moviebanner_display        int    `json:"moviebanner_display" validate:"required"`
+}

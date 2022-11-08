@@ -1306,6 +1306,77 @@ func Delete_episode(admin string, idrecord, idseason int) (helpers.Response, err
 
 	return res, nil
 }
+func Save_moviebanner(admin, name, urlimg, urldestination, status, sdata string, idrecord, display int) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	tglnow, _ := goment.New()
+	render_page := time.Now()
+	flag := false
+
+	if sdata == "New" {
+		sql_insert := `
+			insert into
+			` + configs.DB_tbl_trx_movie_banner + ` (
+				moviebannerid ,nmmoviebanner, 
+				urlimgmoviebanner, urldestinationmoviebanner, displaymoviebanner ,statusmoviebanner, 
+				createmoviebanner, createdatemoviebanner
+			) values (
+				$1 ,$2, 
+				$3, $4, $5, $6,
+				$7, $8
+			)
+		`
+		field_column := configs.DB_tbl_trx_movie_banner + tglnow.Format("YYYY")
+		idrecord_counter := Get_counter(field_column)
+		temp_idrecord := tglnow.Format("YY") + tglnow.Format("MM") + strconv.Itoa(idrecord_counter)
+		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_movie_banner, "INSERT",
+			temp_idrecord,
+			name, urlimg, urldestination, display, status,
+			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
+
+		if flag_insert {
+			flag = true
+			msg = "Succes"
+			log.Println(msg_insert)
+		} else {
+			log.Println(msg_insert)
+		}
+	} else {
+		sql_update := `
+			UPDATE 
+			` + configs.DB_tbl_trx_movie_banner + ` 
+			SET nmmoviebanner=$1, urlimgmoviebanner=$2, urldestinationmoviebanner=$3, displaymoviebanner=$4, statusmoviebanner=$5 ,
+			updatemoviebanner=$6, updatedatemoviebanner=$7 
+			WHERE moviebannerid=$8 
+		`
+		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_movie_banner, "UPDATE",
+			name, urlimg, urldestination, display, status,
+			admin,
+			tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
+
+		if flag_update {
+			flag = true
+			msg = "Succes"
+			log.Println(msg_update)
+		} else {
+			log.Println(msg_update)
+		}
+	}
+
+	if flag {
+		res.Status = fiber.StatusOK
+		res.Message = msg
+		res.Record = nil
+		res.Time = time.Since(render_page).String()
+	} else {
+		res.Status = fiber.StatusBadRequest
+		res.Message = msg
+		res.Record = nil
+		res.Time = time.Since(render_page).String()
+	}
+
+	return res, nil
+}
 
 func Fetch_movieminiHome(search string) (helpers.Response, error) {
 	var obj entities.Model_minimovie

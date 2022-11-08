@@ -1521,6 +1521,70 @@ func Genredelete(c *fiber.Ctx) error {
 		return c.JSON(result)
 	}
 }
+func MoviebannerSave(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_moviebannersave)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+	user := c.Locals("jwt").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	temp_decp := helpers.Decryption(name)
+	client_admin, idruleadmin := helpers.Parsing_Decry(temp_decp, "==")
+	log.Println("RULE :" + client.Page)
+	ruleadmin := models.Get_AdminRule("ruleadmingroup", idruleadmin)
+	flag := models.Get_listitemsearch(ruleadmin, ",", client.Page)
+
+	if !flag {
+		c.Status(fiber.StatusForbidden)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusForbidden,
+			"message": "Anda tidak bisa akses halaman ini",
+			"record":  nil,
+		})
+	} else {
+		// admin, name, urlimg, urldestination, status, sdata string, idrecord, display int
+		result, err := models.Save_moviebanner(
+			client_admin,
+			client.Moviebanner_name, client.Moviebanner_urlimg, client.Moviebanner_urldestination,
+			client.Moviebanner_status, client.Sdata,
+			client.Moviebanner_id, client.Moviebanner_display)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"status":  fiber.StatusBadRequest,
+				"message": err.Error(),
+				"record":  nil,
+			})
+		}
+		val_moviebanner := helpers.DeleteRedis(Fieldmoviebanner_home_redis)
+		log.Printf("Redis Delete BACKEND MOVIE EPISODE : %d", val_moviebanner)
+		return c.JSON(result)
+	}
+}
 
 type responseuploadcloudflare struct {
 	Status bool        `json:"success"`

@@ -22,6 +22,7 @@ import (
 
 const Fieldmovie_home_redis = "LISTMOVIE_BACKEND_ISBPANEL"
 const Fieldmovienotcdn_home_redis = "LISTMOVIENOTCDN_BACKEND_ISBPANEL"
+const Fieldmoviebanner_home_redis = "LISTMOVIEBANNER_BACKEND_ISBPANEL"
 const Fieldmovierouble_home_redis = "LISTMOVIETROUBLE_BACKEND_ISBPANEL"
 const Fieldmoviemini_home_redis = "LISTMOVIEMINI_BACKEND_ISBPANEL"
 const Fieldgenre_home_redis = "LISTGENRE_BACKEND_ISBPANEL"
@@ -196,6 +197,53 @@ func Moviehomenotcdn(c *fiber.Ctx) error {
 		return c.JSON(result)
 	} else {
 		log.Println("MOVIE NOT CDN")
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusOK,
+			"message": message_RD,
+			"record":  arraobj,
+			"time":    time.Since(render_page).String(),
+		})
+	}
+}
+func Moviehomebanner(c *fiber.Ctx) error {
+	var obj entities.Model_moviebanner
+	var arraobj []entities.Model_moviebanner
+	render_page := time.Now()
+	resultredis, flag := helpers.GetRedis(Fieldmoviebanner_home_redis)
+	jsonredis := []byte(resultredis)
+	message_RD, _ := jsonparser.GetString(jsonredis, "message")
+	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
+	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		moviebanner_id, _ := jsonparser.GetInt(value, "moviebanner_id")
+		moviebanner_title, _ := jsonparser.GetString(value, "moviebanner_title")
+		moviebanner_urlimage, _ := jsonparser.GetString(value, "moviebanner_urlimage")
+		moviebanner_urldestination, _ := jsonparser.GetString(value, "moviebanner_urldestination")
+		moviebanner_display, _ := jsonparser.GetInt(value, "moviebanner_display")
+		moviebanner_status, _ := jsonparser.GetString(value, "moviebanner_status")
+
+		obj.Moviebanner_id = int(moviebanner_id)
+		obj.Moviebanner_title = moviebanner_title
+		obj.Moviebanner_urlimage = moviebanner_urlimage
+		obj.Moviebanner_urldestination = moviebanner_urldestination
+		obj.Moviebanner_display = int(moviebanner_display)
+		obj.Moviebanner_status = moviebanner_status
+		arraobj = append(arraobj, obj)
+	})
+	if !flag {
+		result, err := models.Fetch_movieHomeBanner()
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"status":  fiber.StatusBadRequest,
+				"message": err.Error(),
+				"record":  nil,
+			})
+		}
+		helpers.SetRedis(Fieldmoviebanner_home_redis, result, 2*time.Minute)
+		log.Println("MOVIE BANNER MYSQL")
+		return c.JSON(result)
+	} else {
+		log.Println("MOVIE BANNER")
 		return c.JSON(fiber.Map{
 			"status":  fiber.StatusOK,
 			"message": message_RD,

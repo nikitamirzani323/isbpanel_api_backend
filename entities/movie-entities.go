@@ -28,6 +28,16 @@ type Model_movienotcdn struct {
 	Movie_id    int    `json:"movie_id"`
 	Movie_title string `json:"movie_title"`
 }
+type Model_moviebanner struct {
+	Moviebanner_id             int    `json:"moviebanner_id"`
+	Moviebanner_title          string `json:"moviebanner_title"`
+	Moviebanner_urlimage       string `json:"moviebanner_urlimage"`
+	Moviebanner_urldestination string `json:"moviebanner_urldestination"`
+	Moviebanner_status         string `json:"moviebanner_status"`
+	Moviebanner_display        int    `json:"moviebanner_display"`
+	Moviebanner_create         string `json:"moviebanner_create"`
+	Moviebanner_update         string `json:"moviebanner_update"`
+}
 type Model_moviegenre struct {
 	Moviegenre_id   int    `json:"moviegenre_id"`
 	Moviegenre_name string `json:"moviegenre_name"`

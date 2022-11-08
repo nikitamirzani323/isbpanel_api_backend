@@ -231,6 +231,53 @@ func Fetch_movieHomeNotCDN() (helpers.Response, error) {
 
 	return res, nil
 }
+func Fetch_movieHomeBanner() (helpers.Response, error) {
+	var obj entities.Model_moviebanner
+	var arraobj []entities.Model_moviebanner
+	var res helpers.Response
+	msg := "Data Not Found"
+	con := db.CreateCon()
+	ctx := context.Background()
+	start := time.Now()
+
+	sql_select := ""
+	sql_select += ""
+	sql_select += "SELECT "
+	sql_select += "moviebannerid, nmmoviebanner , urlimgmoviebanner, urldestinationmoviebanner, "
+	sql_select += "displaymoviebanner, statusmoviebanner "
+	sql_select += "FROM " + configs.DB_tbl_trx_movie_banner + "  "
+	sql_select += "ORDER BY createdatemoviebanner DESC  "
+	row, err := con.QueryContext(ctx, sql_select)
+	helpers.ErrorCheck(err)
+	for row.Next() {
+		var (
+			moviebannerid_db, displaymoviebanner_db                                                    int
+			nmmoviebanner_db, urlimgmoviebanner_db, urldestinationmoviebanner_db, statusmoviebanner_db string
+		)
+
+		err = row.Scan(&moviebannerid_db, &nmmoviebanner_db, &urlimgmoviebanner_db, &urldestinationmoviebanner_db, &displaymoviebanner_db, &statusmoviebanner_db)
+
+		helpers.ErrorCheck(err)
+
+		obj.Moviebanner_id = moviebannerid_db
+		obj.Moviebanner_title = nmmoviebanner_db
+		obj.Moviebanner_urlimage = urlimgmoviebanner_db
+		obj.Moviebanner_urldestination = urldestinationmoviebanner_db
+		obj.Moviebanner_display = displaymoviebanner_db
+		obj.Moviebanner_status = statusmoviebanner_db
+
+		arraobj = append(arraobj, obj)
+		msg = "Success"
+	}
+	defer row.Close()
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = arraobj
+	res.Time = time.Since(start).String()
+
+	return res, nil
+}
 func Save_movie(admin, name, label, slug, tipemovie, descp, urlthum, listgenre, listsource, sdata string, idrecord, year, status int, imdb float32) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"

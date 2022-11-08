@@ -8,12 +8,12 @@ services:
     ports:
       - 5052:5052
     restart: always
-  isbpanel-psql-stg:
-    container_name: isbpanel-psql-stg
-    image: gcr.io/cloudsql-docker/gce-proxy:1.11
-    command: /cloud_sql_proxy --dir=/cloudsql -instances=dazzling-pillar-328210:asia-northeast3:isbpanel-stagging=tcp:0.0.0.0:5432 -credential_file=/secrets/cloudsql/credentials.json
-    ports:
-      - 3320:5432
-    volumes:
-      - ./cloud_sql_client_isbpanel.json:/secrets/cloudsql/credentials.json
-    restart: always
+  # isbpanel-psql-stg:
+  #   container_name: isbpanel-psql-stg
+  #   image: gcr.io/cloudsql-docker/gce-proxy:1.11
+  #   command: /cloud_sql_proxy --dir=/cloudsql -instances=dazzling-pillar-328210:asia-northeast3:isbpanel-stagging=tcp:0.0.0.0:5432 -credential_file=/secrets/cloudsql/credentials.json
+  #   ports:
+  #     - 3320:5432
+  #   volumes:
+  #     - ./cloud_sql_client_isbpanel.json:/secrets/cloudsql/credentials.json
+  #   restart: always

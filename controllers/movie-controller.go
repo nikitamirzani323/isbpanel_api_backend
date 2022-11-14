@@ -1640,8 +1640,8 @@ func MoviebannerDelete(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		val_genre := helpers.DeleteRedis(Fieldgenre_home_redis)
-		log.Printf("Redis Delete BACKEND MOVIE GENRE : %d", val_genre)
+		val_moviebanner := helpers.DeleteRedis(Fieldmoviebanner_home_redis)
+		log.Printf("Redis Delete BACKEND MOVIE EPISODE : %d", val_moviebanner)
 		return c.JSON(result)
 	}
 }

@@ -222,3 +222,8 @@ type Controller_moviebannersave struct {
 	Moviebanner_status         string `json:"moviebanner_status" validate:"required"`
 	Moviebanner_display        int    `json:"moviebanner_display" validate:"required"`
 }
+type Controller_moviebannerdelete struct {
+	Page          string `json:"page" validate:"required"`
+	Sdata         string `json:"sdata" validate:"required"`
+	Moviebannerid int    `json:"moviebannerid" validate:"required"`
+}

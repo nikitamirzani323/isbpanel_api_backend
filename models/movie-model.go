@@ -1341,26 +1341,6 @@ func Save_moviebanner(admin, name, urlimg, urldestination, status, sdata string,
 		} else {
 			log.Println(msg_insert)
 		}
-	} else {
-		sql_update := `
-			UPDATE 
-			` + configs.DB_tbl_trx_movie_banner + ` 
-			SET nmmoviebanner=$1, urlimgmoviebanner=$2, urldestinationmoviebanner=$3, displaymoviebanner=$4, statusmoviebanner=$5 ,
-			updatemoviebanner=$6, updatedatemoviebanner=$7 
-			WHERE moviebannerid=$8 
-		`
-		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_movie_banner, "UPDATE",
-			name, urlimg, urldestination, display, status,
-			admin,
-			tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
-
-		if flag_update {
-			flag = true
-			msg = "Succes"
-			log.Println(msg_update)
-		} else {
-			log.Println(msg_update)
-		}
 	}
 
 	if flag {
@@ -1377,7 +1357,48 @@ func Save_moviebanner(admin, name, urlimg, urldestination, status, sdata string,
 
 	return res, nil
 }
+func Delete_moviebanner(admin string, idrecord int) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	render_page := time.Now()
+	flag := false
 
+	flag = CheckDB(configs.DB_tbl_trx_movie_banner, "moviebannerid", strconv.Itoa(idrecord))
+	if flag {
+		sql_delete := `
+			DELETE FROM
+			` + configs.DB_tbl_trx_movie_banner + ` 
+			WHERE moviebannerid=$1 
+		`
+
+		flag_delete, msg_delete := Exec_SQL(sql_delete, configs.DB_tbl_trx_movie_banner, "DELETE", idrecord)
+
+		if flag_delete {
+			flag = true
+			msg = "Succes"
+			log.Println(msg_delete)
+		} else {
+			log.Println(msg_delete)
+		}
+
+	} else {
+		msg = "Data Not Found"
+	}
+
+	if flag {
+		res.Status = fiber.StatusOK
+		res.Message = msg
+		res.Record = nil
+		res.Time = time.Since(render_page).String()
+	} else {
+		res.Status = fiber.StatusBadRequest
+		res.Message = msg
+		res.Record = nil
+		res.Time = time.Since(render_page).String()
+	}
+
+	return res, nil
+}
 func Fetch_movieminiHome(search string) (helpers.Response, error) {
 	var obj entities.Model_minimovie
 	var arraobj []entities.Model_minimovie

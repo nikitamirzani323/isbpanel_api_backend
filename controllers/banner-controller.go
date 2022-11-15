@@ -73,7 +73,7 @@ func Bannerhome(c *fiber.Ctx) error {
 }
 func Bannersave(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
-	client := new(entities.Controller_bannersave)
+	client := new(entities.Controller_bannerduplicate)
 	validate := validator.New()
 	if err := c.BodyParser(client); err != nil {
 		c.Status(fiber.StatusBadRequest)
@@ -105,10 +105,7 @@ func Bannersave(c *fiber.Ctx) error {
 	temp_decp := helpers.Decryption(name)
 	client_admin, _ := helpers.Parsing_Decry(temp_decp, "==")
 
-	result, err := models.Save_banner(
-		client_admin, client.Sdata,
-		client.Banner_name, client.Banner_url, client.Banner_urlwebsite, client.Banner_device, client.Banner_posisi, client.Banner_status,
-		client.Banner_id, client.Banner_display)
+	result, err := models.Duplicate_banner(client_admin, client.Banner_id)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{

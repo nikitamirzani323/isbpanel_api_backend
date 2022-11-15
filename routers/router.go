@@ -138,6 +138,7 @@ func Init() *fiber.App {
 
 	app.Post("/api/banner", middleware.JWTProtected(), controllers.Bannerhome)
 	app.Post("/api/bannersave", middleware.JWTProtected(), controllers.Bannersave)
+	app.Post("/api/bannerduplicate", middleware.JWTProtected(), controllers.Bannersave)
 
 	app.Post("/api/departement", middleware.JWTProtected(), controllers.Departementhome)
 	app.Post("/api/departementsave", middleware.JWTProtected(), controllers.DepartementSave)

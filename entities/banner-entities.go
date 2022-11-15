@@ -24,3 +24,8 @@ type Controller_bannersave struct {
 	Banner_display    int    `json:"banner_display" `
 	Banner_status     string `json:"banner_status" validate:"required"`
 }
+type Controller_bannerduplicate struct {
+	Sdata     string `json:"sdata" validate:"required"`
+	Page      string `json:"page" validate:"required"`
+	Banner_id int    `json:"banner_id"`
+}

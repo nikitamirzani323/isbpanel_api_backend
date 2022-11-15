@@ -33,6 +33,7 @@ type Model_moviebanner struct {
 	Moviebanner_title          string `json:"moviebanner_title"`
 	Moviebanner_urlimage       string `json:"moviebanner_urlimage"`
 	Moviebanner_urldestination string `json:"moviebanner_urldestination"`
+	Moviebanner_device         string `json:"moviebanner_device"`
 	Moviebanner_status         string `json:"moviebanner_status"`
 	Moviebanner_display        int    `json:"moviebanner_display"`
 	Moviebanner_create         string `json:"moviebanner_create"`
@@ -219,6 +220,7 @@ type Controller_moviebannersave struct {
 	Moviebanner_name           string `json:"moviebanner_name" validate:"required"`
 	Moviebanner_urlimg         string `json:"moviebanner_urlimg" validate:"required"`
 	Moviebanner_urldestination string `json:"moviebanner_urldestination" validate:"required"`
+	Moviebanner_device         string `json:"moviebanner_device" validate:"required"`
 	Moviebanner_status         string `json:"moviebanner_status" validate:"required"`
 	Moviebanner_display        int    `json:"moviebanner_display" validate:"required"`
 }

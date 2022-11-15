@@ -243,7 +243,7 @@ func Fetch_movieHomeBanner() (helpers.Response, error) {
 	sql_select := ""
 	sql_select += ""
 	sql_select += "SELECT "
-	sql_select += "moviebannerid, nmmoviebanner , urlimgmoviebanner, urldestinationmoviebanner, "
+	sql_select += "moviebannerid, nmmoviebanner , urlimgmoviebanner, urldestinationmoviebanner, devicemoviebanner, "
 	sql_select += "displaymoviebanner, statusmoviebanner "
 	sql_select += "FROM " + configs.DB_tbl_trx_movie_banner + "  "
 	sql_select += "ORDER BY createdatemoviebanner DESC  "
@@ -251,11 +251,12 @@ func Fetch_movieHomeBanner() (helpers.Response, error) {
 	helpers.ErrorCheck(err)
 	for row.Next() {
 		var (
-			moviebannerid_db, displaymoviebanner_db                                                    int
-			nmmoviebanner_db, urlimgmoviebanner_db, urldestinationmoviebanner_db, statusmoviebanner_db string
+			moviebannerid_db, displaymoviebanner_db                                                                          int
+			nmmoviebanner_db, urlimgmoviebanner_db, urldestinationmoviebanner_db, devicemoviebanner_db, statusmoviebanner_db string
 		)
 
-		err = row.Scan(&moviebannerid_db, &nmmoviebanner_db, &urlimgmoviebanner_db, &urldestinationmoviebanner_db, &displaymoviebanner_db, &statusmoviebanner_db)
+		err = row.Scan(&moviebannerid_db, &nmmoviebanner_db, &urlimgmoviebanner_db, &urldestinationmoviebanner_db,
+			&devicemoviebanner_db, &displaymoviebanner_db, &statusmoviebanner_db)
 
 		helpers.ErrorCheck(err)
 
@@ -263,6 +264,7 @@ func Fetch_movieHomeBanner() (helpers.Response, error) {
 		obj.Moviebanner_title = nmmoviebanner_db
 		obj.Moviebanner_urlimage = urlimgmoviebanner_db
 		obj.Moviebanner_urldestination = urldestinationmoviebanner_db
+		obj.Moviebanner_device = devicemoviebanner_db
 		obj.Moviebanner_display = displaymoviebanner_db
 		obj.Moviebanner_status = statusmoviebanner_db
 
@@ -1306,7 +1308,7 @@ func Delete_episode(admin string, idrecord, idseason int) (helpers.Response, err
 
 	return res, nil
 }
-func Save_moviebanner(admin, name, urlimg, urldestination, status, sdata string, idrecord, display int) (helpers.Response, error) {
+func Save_moviebanner(admin, name, urlimg, urldestination, device, status, sdata string, idrecord, display int) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"
 	tglnow, _ := goment.New()
@@ -1318,12 +1320,12 @@ func Save_moviebanner(admin, name, urlimg, urldestination, status, sdata string,
 			insert into
 			` + configs.DB_tbl_trx_movie_banner + ` (
 				moviebannerid ,nmmoviebanner, 
-				urlimgmoviebanner, urldestinationmoviebanner, displaymoviebanner ,statusmoviebanner, 
+				urlimgmoviebanner, urldestinationmoviebanner, devicemoviebanner, displaymoviebanner ,statusmoviebanner, 
 				createmoviebanner, createdatemoviebanner
 			) values (
 				$1 ,$2, 
-				$3, $4, $5, $6,
-				$7, $8
+				$3, $4, $5, $6, $7, 
+				$8, $9
 			)
 		`
 		field_column := configs.DB_tbl_trx_movie_banner + tglnow.Format("YYYY")
@@ -1331,7 +1333,7 @@ func Save_moviebanner(admin, name, urlimg, urldestination, status, sdata string,
 		temp_idrecord := tglnow.Format("YY") + tglnow.Format("MM") + strconv.Itoa(idrecord_counter)
 		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_movie_banner, "INSERT",
 			temp_idrecord,
-			name, urlimg, urldestination, display, status,
+			name, urlimg, urldestination, device, display, status,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 
 		if flag_insert {
@@ -1340,6 +1342,25 @@ func Save_moviebanner(admin, name, urlimg, urldestination, status, sdata string,
 			log.Println(msg_insert)
 		} else {
 			log.Println(msg_insert)
+		}
+	} else {
+		sql_update := `
+			UPDATE 
+			` + configs.DB_tbl_trx_movie_banner + ` 
+			SET nmmoviebanner=$1, urlimgmoviebanner=$2, urldestinationmoviebanner=$3, devicemoviebanner=$4, displaymoviebanner=$5 ,statusmoviebanner=$6 , 
+			updatemoviebanner=$7, updatedatemoviebanner=$8 
+			WHERE moviebannerid=$9 
+		`
+		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_movie_banner, "UPDATE",
+			name, urlimg, urldestination, device, display, status,
+			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
+
+		if flag_update {
+			flag = true
+			msg = "Succes"
+			log.Println(msg_update)
+		} else {
+			log.Println(msg_update)
 		}
 	}
 

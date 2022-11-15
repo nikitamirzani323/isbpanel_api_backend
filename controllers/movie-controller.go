@@ -218,6 +218,7 @@ func Moviehomebanner(c *fiber.Ctx) error {
 		moviebanner_title, _ := jsonparser.GetString(value, "moviebanner_title")
 		moviebanner_urlimage, _ := jsonparser.GetString(value, "moviebanner_urlimage")
 		moviebanner_urldestination, _ := jsonparser.GetString(value, "moviebanner_urldestination")
+		moviebanner_device, _ := jsonparser.GetString(value, "moviebanner_device")
 		moviebanner_display, _ := jsonparser.GetInt(value, "moviebanner_display")
 		moviebanner_status, _ := jsonparser.GetString(value, "moviebanner_status")
 
@@ -225,6 +226,7 @@ func Moviehomebanner(c *fiber.Ctx) error {
 		obj.Moviebanner_title = moviebanner_title
 		obj.Moviebanner_urlimage = moviebanner_urlimage
 		obj.Moviebanner_urldestination = moviebanner_urldestination
+		obj.Moviebanner_device = moviebanner_device
 		obj.Moviebanner_display = int(moviebanner_display)
 		obj.Moviebanner_status = moviebanner_status
 		arraobj = append(arraobj, obj)
@@ -1566,10 +1568,10 @@ func MoviebannerSave(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	} else {
-		// admin, name, urlimg, urldestination, status, sdata string, idrecord, display int
+		// admin, name, urlimg, urldestination, device, status, sdata string, idrecord, display int
 		result, err := models.Save_moviebanner(
 			client_admin,
-			client.Moviebanner_name, client.Moviebanner_urlimg, client.Moviebanner_urldestination,
+			client.Moviebanner_name, client.Moviebanner_urlimg, client.Moviebanner_urldestination, client.Moviebanner_device,
 			client.Moviebanner_status, client.Sdata,
 			client.Moviebanner_id, client.Moviebanner_display)
 		if err != nil {

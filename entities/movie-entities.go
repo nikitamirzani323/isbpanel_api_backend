@@ -35,9 +35,8 @@ type Model_moviebanner struct {
 	Moviebanner_urldestination string `json:"moviebanner_urldestination"`
 	Moviebanner_device         string `json:"moviebanner_device"`
 	Moviebanner_status         string `json:"moviebanner_status"`
+	Moviebanner_statuscss      string `json:"moviebanner_statuscss"`
 	Moviebanner_display        int    `json:"moviebanner_display"`
-	Moviebanner_create         string `json:"moviebanner_create"`
-	Moviebanner_update         string `json:"moviebanner_update"`
 }
 type Model_moviegenre struct {
 	Moviegenre_id   int    `json:"moviegenre_id"`

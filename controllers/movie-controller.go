@@ -221,6 +221,7 @@ func Moviehomebanner(c *fiber.Ctx) error {
 		moviebanner_device, _ := jsonparser.GetString(value, "moviebanner_device")
 		moviebanner_display, _ := jsonparser.GetInt(value, "moviebanner_display")
 		moviebanner_status, _ := jsonparser.GetString(value, "moviebanner_status")
+		moviebanner_statuscss, _ := jsonparser.GetString(value, "moviebanner_statuscss")
 
 		obj.Moviebanner_id = int(moviebanner_id)
 		obj.Moviebanner_title = moviebanner_title
@@ -229,6 +230,7 @@ func Moviehomebanner(c *fiber.Ctx) error {
 		obj.Moviebanner_device = moviebanner_device
 		obj.Moviebanner_display = int(moviebanner_display)
 		obj.Moviebanner_status = moviebanner_status
+		obj.Moviebanner_statuscss = moviebanner_statuscss
 		arraobj = append(arraobj, obj)
 	})
 	if !flag {

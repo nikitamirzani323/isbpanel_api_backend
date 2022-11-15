@@ -246,7 +246,7 @@ func Fetch_movieHomeBanner() (helpers.Response, error) {
 	sql_select += "moviebannerid, nmmoviebanner , urlimgmoviebanner, urldestinationmoviebanner, devicemoviebanner, "
 	sql_select += "displaymoviebanner, statusmoviebanner "
 	sql_select += "FROM " + configs.DB_tbl_trx_movie_banner + "  "
-	sql_select += "ORDER BY createdatemoviebanner DESC  "
+	sql_select += "ORDER BY displaymoviebanner ASC  "
 	row, err := con.QueryContext(ctx, sql_select)
 	helpers.ErrorCheck(err)
 	for row.Next() {
@@ -260,13 +260,20 @@ func Fetch_movieHomeBanner() (helpers.Response, error) {
 
 		helpers.ErrorCheck(err)
 
+		statusbanner := "HIDE"
+		statusbannercss := configs.STATUS_CANCEL
+		if statusmoviebanner_db == "Y" {
+			statusbanner = "SHOW"
+			statusbannercss = configs.STATUS_RUNNING
+		}
 		obj.Moviebanner_id = moviebannerid_db
 		obj.Moviebanner_title = nmmoviebanner_db
 		obj.Moviebanner_urlimage = urlimgmoviebanner_db
 		obj.Moviebanner_urldestination = urldestinationmoviebanner_db
 		obj.Moviebanner_device = devicemoviebanner_db
 		obj.Moviebanner_display = displaymoviebanner_db
-		obj.Moviebanner_status = statusmoviebanner_db
+		obj.Moviebanner_status = statusbanner
+		obj.Moviebanner_statuscss = statusbannercss
 
 		arraobj = append(arraobj, obj)
 		msg = "Success"

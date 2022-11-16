@@ -76,74 +76,12 @@ func Fetch_bannerHome() (helpers.Response, error) {
 	return res, nil
 }
 
-func Duplicate_banner(admin string, idrecord int) (helpers.Response, error) {
-	var res helpers.Response
-	msg := "Failed"
-	con := db.CreateCon()
-	ctx := context.Background()
-	tglnow, _ := goment.New()
-	render_page := time.Now()
-
-	sql_select := `SELECT 
-			nmbanner , urlbanner, urlwebsite, devicebanner, posisibanner, displaybanner, statusbanner  
-			FROM ` + configs.DB_tbl_mst_banner + `  
-			WHERE idbanner = $1 
-	`
-
-	row, err := con.QueryContext(ctx, sql_select, idrecord)
-	helpers.ErrorCheck(err)
-	for row.Next() {
-		var (
-			displaybanner_db                                                                            int
-			nmbanner_db, urlbanner_db, urlwebsite_db, devicebanner_db, posisibanner_db, statusbanner_db string
-		)
-
-		err = row.Scan(&nmbanner_db, &urlbanner_db, &urlwebsite_db,
-			&devicebanner_db, &posisibanner_db, &displaybanner_db, &statusbanner_db)
-
-		helpers.ErrorCheck(err)
-
-		sql_insert := `
-			insert into
-			` + configs.DB_tbl_mst_banner + ` (
-				idbanner , nmbanner, urlbanner, urlwebsite, 
-				devicebanner, posisibanner, displaybanner, statusbanner, 
-				createbanner, createdatebanner
-			) values (
-				$1 ,$2, $3, $4,
-				$5, $6, $7, $8,
-				$9, $10  
-			)
-		`
-		field_column := configs.DB_tbl_mst_banner + tglnow.Format("YYYY")
-		idrecord_counter := Get_counter(field_column)
-		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_mst_banner, "INSERT",
-			tglnow.Format("YY")+strconv.Itoa(idrecord_counter),
-			nmbanner_db, urlbanner_db, urlwebsite_db, devicebanner_db, posisibanner_db, displaybanner_db, statusbanner_db,
-			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
-
-		if flag_insert {
-			msg = "Succes"
-			log.Println(msg_insert)
-		} else {
-			log.Println(msg_insert)
-		}
-	}
-	defer row.Close()
-
-	res.Status = fiber.StatusOK
-	res.Message = msg
-	res.Record = nil
-	res.Time = time.Since(render_page).String()
-
-	return res, nil
-}
 func Save_banner(admin, sdata, nmbanner, urlbanner, urlwebsite, devicebanner, posisibanner, status string, idrecord, display int) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"
 	tglnow, _ := goment.New()
 	render_page := time.Now()
-
+	log.Println("asd")
 	if sdata == "New" {
 		sql_insert := `
 			insert into

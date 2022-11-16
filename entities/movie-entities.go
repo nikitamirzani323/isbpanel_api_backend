@@ -28,16 +28,7 @@ type Model_movienotcdn struct {
 	Movie_id    int    `json:"movie_id"`
 	Movie_title string `json:"movie_title"`
 }
-type Model_moviebanner struct {
-	Moviebanner_id             int    `json:"moviebanner_id"`
-	Moviebanner_title          string `json:"moviebanner_title"`
-	Moviebanner_urlimage       string `json:"moviebanner_urlimage"`
-	Moviebanner_urldestination string `json:"moviebanner_urldestination"`
-	Moviebanner_device         string `json:"moviebanner_device"`
-	Moviebanner_status         string `json:"moviebanner_status"`
-	Moviebanner_statuscss      string `json:"moviebanner_statuscss"`
-	Moviebanner_display        int    `json:"moviebanner_display"`
-}
+
 type Model_moviegenre struct {
 	Moviegenre_id   int    `json:"moviegenre_id"`
 	Moviegenre_name string `json:"moviegenre_name"`
@@ -210,21 +201,4 @@ type Controller_genredelete struct {
 	Page     string `json:"page" validate:"required"`
 	Sdata    string `json:"sdata" validate:"required"`
 	Genre_id int    `json:"genre_id" validate:"required"`
-}
-type Controller_moviebannersave struct {
-	Page                       string `json:"page" validate:"required"`
-	Sdata                      string `json:"sdata" validate:"required"`
-	Movie_page                 int    `json:"movie_page" `
-	Moviebanner_id             int    `json:"moviebanner_id" `
-	Moviebanner_name           string `json:"moviebanner_name" validate:"required"`
-	Moviebanner_urlimg         string `json:"moviebanner_urlimg" validate:"required"`
-	Moviebanner_urldestination string `json:"moviebanner_urldestination" validate:"required"`
-	Moviebanner_device         string `json:"moviebanner_device" validate:"required"`
-	Moviebanner_status         string `json:"moviebanner_status" validate:"required"`
-	Moviebanner_display        int    `json:"moviebanner_display" validate:"required"`
-}
-type Controller_moviebannerdelete struct {
-	Page          string `json:"page" validate:"required"`
-	Sdata         string `json:"sdata" validate:"required"`
-	Moviebannerid int    `json:"moviebannerid" validate:"required"`
 }

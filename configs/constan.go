@@ -27,7 +27,6 @@ const (
 	DB_tbl_trx_gameslot          string = "tbl_trx_gameslot"
 	DB_tbl_trx_news              string = "tbl_trx_news"
 	DB_tbl_trx_moviegenre        string = "tbl_trx_moviegenre"
-	DB_tbl_trx_movie_banner      string = "tbl_trx_moviebanner"
 	DB_tbl_trx_movie             string = "tbl_trx_movie"
 	DB_tbl_trx_slide             string = "tbl_trx_slide"
 	DB_tbl_trx_comment           string = "tbl_trx_comment"

@@ -76,7 +76,6 @@ func Init() *fiber.App {
 
 	app.Post("/api/movie", middleware.JWTProtected(), controllers.Moviehome)
 	app.Post("/api/movienotcdn", middleware.JWTProtected(), controllers.Moviehomenotcdn)
-	app.Post("/api/moviebanner", middleware.JWTProtected(), controllers.Moviehomebanner)
 	app.Post("/api/movietrouble", middleware.JWTProtected(), controllers.Movietroublehome)
 	app.Post("/api/moviemini", middleware.JWTProtected(), controllers.Movieminihome)
 	app.Post("/api/moviesave", middleware.JWTProtected(), controllers.Moviesave)
@@ -97,8 +96,6 @@ func Init() *fiber.App {
 	app.Post("/api/genremovie", middleware.JWTProtected(), controllers.Genrehome)
 	app.Post("/api/genremoviesave", middleware.JWTProtected(), controllers.Genresave)
 	app.Post("/api/genremoviedelete", middleware.JWTProtected(), controllers.Genredelete)
-	app.Post("/api/moviebannersave", middleware.JWTProtected(), controllers.MoviebannerSave)
-	app.Post("/api/moviebannerdelete", middleware.JWTProtected(), controllers.MoviebannerDelete)
 
 	app.Post("/api/slider", middleware.JWTProtected(), controllers.Sliderhome)
 	app.Post("/api/slidersave", middleware.JWTProtected(), controllers.Slidersave)

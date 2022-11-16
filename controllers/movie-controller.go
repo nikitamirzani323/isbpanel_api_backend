@@ -22,7 +22,6 @@ import (
 
 const Fieldmovie_home_redis = "LISTMOVIE_BACKEND_ISBPANEL"
 const Fieldmovienotcdn_home_redis = "LISTMOVIENOTCDN_BACKEND_ISBPANEL"
-const Fieldmoviebanner_home_redis = "LISTMOVIEBANNER_BACKEND_ISBPANEL"
 const Fieldmovierouble_home_redis = "LISTMOVIETROUBLE_BACKEND_ISBPANEL"
 const Fieldmoviemini_home_redis = "LISTMOVIEMINI_BACKEND_ISBPANEL"
 const Fieldgenre_home_redis = "LISTGENRE_BACKEND_ISBPANEL"
@@ -205,57 +204,7 @@ func Moviehomenotcdn(c *fiber.Ctx) error {
 		})
 	}
 }
-func Moviehomebanner(c *fiber.Ctx) error {
-	var obj entities.Model_moviebanner
-	var arraobj []entities.Model_moviebanner
-	render_page := time.Now()
-	resultredis, flag := helpers.GetRedis(Fieldmoviebanner_home_redis)
-	jsonredis := []byte(resultredis)
-	message_RD, _ := jsonparser.GetString(jsonredis, "message")
-	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
-	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		moviebanner_id, _ := jsonparser.GetInt(value, "moviebanner_id")
-		moviebanner_title, _ := jsonparser.GetString(value, "moviebanner_title")
-		moviebanner_urlimage, _ := jsonparser.GetString(value, "moviebanner_urlimage")
-		moviebanner_urldestination, _ := jsonparser.GetString(value, "moviebanner_urldestination")
-		moviebanner_device, _ := jsonparser.GetString(value, "moviebanner_device")
-		moviebanner_display, _ := jsonparser.GetInt(value, "moviebanner_display")
-		moviebanner_status, _ := jsonparser.GetString(value, "moviebanner_status")
-		moviebanner_statuscss, _ := jsonparser.GetString(value, "moviebanner_statuscss")
 
-		obj.Moviebanner_id = int(moviebanner_id)
-		obj.Moviebanner_title = moviebanner_title
-		obj.Moviebanner_urlimage = moviebanner_urlimage
-		obj.Moviebanner_urldestination = moviebanner_urldestination
-		obj.Moviebanner_device = moviebanner_device
-		obj.Moviebanner_display = int(moviebanner_display)
-		obj.Moviebanner_status = moviebanner_status
-		obj.Moviebanner_statuscss = moviebanner_statuscss
-		arraobj = append(arraobj, obj)
-	})
-	if !flag {
-		result, err := models.Fetch_movieHomeBanner()
-		if err != nil {
-			c.Status(fiber.StatusBadRequest)
-			return c.JSON(fiber.Map{
-				"status":  fiber.StatusBadRequest,
-				"message": err.Error(),
-				"record":  nil,
-			})
-		}
-		helpers.SetRedis(Fieldmoviebanner_home_redis, result, 2*time.Minute)
-		log.Println("MOVIE BANNER MYSQL")
-		return c.JSON(result)
-	} else {
-		log.Println("MOVIE BANNER")
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusOK,
-			"message": message_RD,
-			"record":  arraobj,
-			"time":    time.Since(render_page).String(),
-		})
-	}
-}
 func Movieminihome(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
 	client := new(entities.Controller_moviemini)
@@ -1522,130 +1471,6 @@ func Genredelete(c *fiber.Ctx) error {
 		}
 		val_genre := helpers.DeleteRedis(Fieldgenre_home_redis)
 		log.Printf("Redis Delete BACKEND MOVIE GENRE : %d", val_genre)
-		return c.JSON(result)
-	}
-}
-func MoviebannerSave(c *fiber.Ctx) error {
-	var errors []*helpers.ErrorResponse
-	client := new(entities.Controller_moviebannersave)
-	validate := validator.New()
-	if err := c.BodyParser(client); err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": err.Error(),
-			"record":  nil,
-		})
-	}
-
-	err := validate.Struct(client)
-	if err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			var element helpers.ErrorResponse
-			element.Field = err.StructField()
-			element.Tag = err.Tag()
-			errors = append(errors, &element)
-		}
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": "validation",
-			"record":  errors,
-		})
-	}
-	user := c.Locals("jwt").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
-	temp_decp := helpers.Decryption(name)
-	client_admin, idruleadmin := helpers.Parsing_Decry(temp_decp, "==")
-	log.Println("RULE :" + client.Page)
-	ruleadmin := models.Get_AdminRule("ruleadmingroup", idruleadmin)
-	flag := models.Get_listitemsearch(ruleadmin, ",", client.Page)
-
-	if !flag {
-		c.Status(fiber.StatusForbidden)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusForbidden,
-			"message": "Anda tidak bisa akses halaman ini",
-			"record":  nil,
-		})
-	} else {
-		// admin, name, urlimg, urldestination, device, status, sdata string, idrecord, display int
-		result, err := models.Save_moviebanner(
-			client_admin,
-			client.Moviebanner_name, client.Moviebanner_urlimg, client.Moviebanner_urldestination, client.Moviebanner_device,
-			client.Moviebanner_status, client.Sdata,
-			client.Moviebanner_id, client.Moviebanner_display)
-		if err != nil {
-			c.Status(fiber.StatusBadRequest)
-			return c.JSON(fiber.Map{
-				"status":  fiber.StatusBadRequest,
-				"message": err.Error(),
-				"record":  nil,
-			})
-		}
-		val_moviebanner := helpers.DeleteRedis(Fieldmoviebanner_home_redis)
-		log.Printf("Redis Delete BACKEND MOVIE EPISODE : %d", val_moviebanner)
-		return c.JSON(result)
-	}
-}
-func MoviebannerDelete(c *fiber.Ctx) error {
-	var errors []*helpers.ErrorResponse
-	client := new(entities.Controller_moviebannerdelete)
-	validate := validator.New()
-	if err := c.BodyParser(client); err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": err.Error(),
-			"record":  nil,
-		})
-	}
-
-	err := validate.Struct(client)
-	if err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			var element helpers.ErrorResponse
-			element.Field = err.StructField()
-			element.Tag = err.Tag()
-			errors = append(errors, &element)
-		}
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": "validation",
-			"record":  errors,
-		})
-	}
-	user := c.Locals("jwt").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
-	temp_decp := helpers.Decryption(name)
-	client_admin, idruleadmin := helpers.Parsing_Decry(temp_decp, "==")
-	log.Println("RULE :" + client.Page)
-	ruleadmin := models.Get_AdminRule("ruleadmingroup", idruleadmin)
-	flag := models.Get_listitemsearch(ruleadmin, ",", client.Page)
-
-	if !flag {
-		c.Status(fiber.StatusForbidden)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusForbidden,
-			"message": "Anda tidak bisa akses halaman ini",
-			"record":  nil,
-		})
-	} else {
-
-		result, err := models.Delete_moviebanner(client_admin, client.Moviebannerid)
-		if err != nil {
-			c.Status(fiber.StatusBadRequest)
-			return c.JSON(fiber.Map{
-				"status":  fiber.StatusBadRequest,
-				"message": err.Error(),
-				"record":  nil,
-			})
-		}
-		val_moviebanner := helpers.DeleteRedis(Fieldmoviebanner_home_redis)
-		log.Printf("Redis Delete BACKEND MOVIE EPISODE : %d", val_moviebanner)
 		return c.JSON(result)
 	}
 }

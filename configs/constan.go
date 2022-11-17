@@ -46,7 +46,7 @@ const (
 	DB_VIEW_MOVIESERIES          string = "VIEW_MOVIESERIES"
 	STATUS_NEW                   string = "background:#0dcaf0;font-weight:bold;color:black;"
 	STATUS_RUNNING               string = "background:#FFEB3B;font-weight:bold;color:black;"
-	STATUS_COMPLETE              string = "background:#8BC34A;font-weight:bold;color:black;"
+	STATUS_COMPLETE              string = "background:#10b981;font-weight:bold;color:#ffffff;"
 	STATUS_CANCEL                string = "background:#E91E63;font-weight:bold;color:white;"
 )
 

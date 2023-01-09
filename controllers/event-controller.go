@@ -13,34 +13,36 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-const Fieldmemberagen_home_redis = "LISTMEMBERAGEN_BACKEND_ISBPANEL"
+const Fieldevent_home_redis = "LISTEVENT_BACKEND_ISBPANEL"
 
-func Memberagenhome(c *fiber.Ctx) error {
-	var obj entities.Model_memberagen
-	var arraobj []entities.Model_memberagen
+func Eventhome(c *fiber.Ctx) error {
+	var obj entities.Model_event
+	var arraobj []entities.Model_event
 	render_page := time.Now()
-	resultredis, flag := helpers.GetRedis(Fieldmemberagen_home_redis)
+	resultredis, flag := helpers.GetRedis(Fieldevent_home_redis)
 	jsonredis := []byte(resultredis)
 	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
 	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		memberagen_id, _ := jsonparser.GetInt(value, "memberagen_id")
-		memberagen_idwebagen, _ := jsonparser.GetInt(value, "memberagen_idwebagen")
-		memberagen_username, _ := jsonparser.GetString(value, "memberagen_username")
-		memberagen_name, _ := jsonparser.GetString(value, "memberagen_name")
-		memberagen_create, _ := jsonparser.GetString(value, "memberagen_create")
-		memberagen_update, _ := jsonparser.GetString(value, "memberagen_update")
+		event_id, _ := jsonparser.GetInt(value, "event_id")
+		event_idwebagen, _ := jsonparser.GetInt(value, "event_idwebagen")
+		event_name, _ := jsonparser.GetString(value, "event_name")
+		event_startevent, _ := jsonparser.GetString(value, "event_startevent")
+		event_endevent, _ := jsonparser.GetString(value, "event_endevent")
+		event_create, _ := jsonparser.GetString(value, "event_create")
+		event_update, _ := jsonparser.GetString(value, "event_update")
 
-		obj.Memberagen_id = int(memberagen_id)
-		obj.Memberagen_idwebagen = int(memberagen_idwebagen)
-		obj.Memberagen_username = memberagen_username
-		obj.Memberagen_name = memberagen_name
-		obj.Memberagen_create = memberagen_create
-		obj.Memberagen_update = memberagen_update
+		obj.Event_id = int(event_id)
+		obj.Event_idwebagen = int(event_idwebagen)
+		obj.Event_name = event_name
+		obj.Event_startevent = event_startevent
+		obj.Event_endevent = event_endevent
+		obj.Event_create = event_create
+		obj.Event_update = event_update
 		arraobj = append(arraobj, obj)
 	})
 
 	if !flag {
-		result, err := models.Fetch_memberagen()
+		result, err := models.Fetch_event()
 		if err != nil {
 			c.Status(fiber.StatusBadRequest)
 			return c.JSON(fiber.Map{
@@ -49,11 +51,11 @@ func Memberagenhome(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Fieldmemberagen_home_redis, result, 60*time.Minute)
-		log.Println("MEMBER AGEN MYSQL")
+		helpers.SetRedis(Fieldevent_home_redis, result, 60*time.Minute)
+		log.Println("EVENT  MYSQL")
 		return c.JSON(result)
 	} else {
-		log.Println("DOMAIN CACHE")
+		log.Println("EVENT CACHE")
 		return c.JSON(fiber.Map{
 			"status":  fiber.StatusOK,
 			"message": "Success",
@@ -62,9 +64,9 @@ func Memberagenhome(c *fiber.Ctx) error {
 		})
 	}
 }
-func MemberagenSave(c *fiber.Ctx) error {
+func EventSave(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
-	client := new(entities.Controller_memberagensave)
+	client := new(entities.Controller_eventsave)
 	validate := validator.New()
 	if err := c.BodyParser(client); err != nil {
 		c.Status(fiber.StatusBadRequest)
@@ -96,9 +98,12 @@ func MemberagenSave(c *fiber.Ctx) error {
 	temp_decp := helpers.Decryption(name)
 	client_admin, _ := helpers.Parsing_Decry(temp_decp, "==")
 
-	result, err := models.Save_memberagen(
+	// admin, nmevent, startevent, endevent, sData string,
+	// idwebagen, idrecord int
+	result, err := models.Save_event(
 		client_admin,
-		client.Memberagen_username, client.Memberagen_name, client.Sdata, client.Memberagen_idwebagen, client.Memberagen_id)
+		client.Event_name, client.Event_startevent, client.Event_endevent,
+		client.Sdata, client.Event_idwebagen, client.Event_id)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
@@ -108,11 +113,11 @@ func MemberagenSave(c *fiber.Ctx) error {
 		})
 	}
 
-	_deleteredis_memberagen()
+	_deleteredis_event()
 	return c.JSON(result)
 }
-func _deleteredis_memberagen() {
-	val_master := helpers.DeleteRedis(Fieldmemberagen_home_redis)
-	log.Printf("Redis Delete BACKEND MEMBER AGEN : %d", val_master)
+func _deleteredis_event() {
+	val_master := helpers.DeleteRedis(Fieldevent_home_redis)
+	log.Printf("Redis Delete BACKEND EVENT : %d", val_master)
 
 }

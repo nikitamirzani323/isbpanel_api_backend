@@ -108,11 +108,11 @@ func Save_memberagen(
 				UPDATE 
 				` + configs.DB_tbl_trx_memberagen + `  
 				SET idwebagen =$1, nmmember=$2, 
-				updateevent=$5, updatedateevent=$6 
-				WHERE idevent=$7  
+				updatememberagen=$3, updatedatememberagen=$4 
+				WHERE idmemberagen=$5   
 			`
 
-		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_mst_domain, "UPDATE",
+		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_memberagen, "UPDATE",
 			idwebagen, nama,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
 

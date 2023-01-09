@@ -110,14 +110,14 @@ func Save_event(
 	} else {
 		sql_update := `
 				UPDATE 
-				` + configs.DB_tbl_mst_providerslot + `  
+				` + configs.DB_tbl_trx_event + `  
 				SET idwebagen =$1, nmevent=$2, 
 				startevent=$3, endevent=$4,
 				updateevent=$5, updatedateevent=$6 
 				WHERE idevent=$7  
 			`
 
-		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_mst_domain, "UPDATE",
+		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_event, "UPDATE",
 			idwebagen, nmevent, startevent, endevent,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
 

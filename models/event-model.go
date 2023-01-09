@@ -75,8 +75,8 @@ func Fetch_event() (helpers.Response, error) {
 	return res, nil
 }
 func Save_event(
-	admin, nmproviderslot, image, slug, title, descp, status, sData string,
-	display, idrecord int) (helpers.Response, error) {
+	admin, nmevent, startevent, endevent, sData string,
+	idwebagen, idrecord int) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"
 	tglnow, _ := goment.New()
@@ -85,28 +85,25 @@ func Save_event(
 	if sData == "New" {
 		sql_insert := `
 				insert into
-				` + configs.DB_tbl_mst_providerslot + ` (
-					idproviderslot , nmproviderslot, providerslot_display,  
-					providerslot_counter , providerslot_status, providerslot_image,  
-					providerslot_slug , providerslot_title, providerslot_descp,   
-					createproviderslot, createdateproviderslot
+				` + configs.DB_tbl_trx_event + ` (
+					idevent , idwebagen, nmevent,  
+					startevent , endevent,  
+					createevent, createdateevent
 				) values (
 					$1, $2, $3, 
-					$4, $5, $6, 
-					$7, $8, $9, 
-					$10, $11 
+					$4, $5,  
+					$6, $7
 				)
 			`
-		field_column := configs.DB_tbl_mst_providerslot + tglnow.Format("YYYY")
+		field_column := configs.DB_tbl_trx_event + tglnow.Format("YYYY")
 		idrecord_counter := Get_counter(field_column)
-		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_mst_providerslot, "INSERT",
-			tglnow.Format("YY")+strconv.Itoa(idrecord_counter), nmproviderslot,
-			display, 0, status, image, slug, title, descp,
+		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_event, "INSERT",
+			tglnow.Format("YY")+tglnow.Format("MM")+tglnow.Format("DD")+strconv.Itoa(idrecord_counter), idwebagen,
+			nmevent, startevent, endevent,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 
 		if flag_insert {
 			msg = "Succes"
-			log.Println(msg_insert)
 		} else {
 			log.Println(msg_insert)
 		}
@@ -114,21 +111,18 @@ func Save_event(
 		sql_update := `
 				UPDATE 
 				` + configs.DB_tbl_mst_providerslot + `  
-				SET nmproviderslot =$1, providerslot_display=$2, 
-				providerslot_status=$3, providerslot_image=$4,
-				providerslot_slug=$5, providerslot_title=$6,
-				providerslot_descp=$7, 
-				updateproviderslot=$8, updatedateproviderslot=$9  
-				WHERE idproviderslot=$10 
+				SET idwebagen =$1, nmevent=$2, 
+				startevent=$3, endevent=$4,
+				updateevent=$5, updatedateevent=$6 
+				WHERE idevent=$7  
 			`
 
 		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_mst_domain, "UPDATE",
-			nmproviderslot, display, status, image, slug, title, descp,
+			idwebagen, nmevent, startevent, endevent,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
 
 		if flag_update {
 			msg = "Succes"
-			log.Println(msg_update)
 		} else {
 			log.Println(msg_update)
 		}

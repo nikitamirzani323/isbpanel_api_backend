@@ -131,7 +131,7 @@ func Save_providerslot(
 				WHERE idproviderslot=$10 
 			`
 
-		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_mst_domain, "UPDATE",
+		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_mst_providerslot, "UPDATE",
 			nmproviderslot, display, status, image, slug, title, descp,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
 

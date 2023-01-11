@@ -29,8 +29,23 @@ func Memberhome(c *fiber.Ctx) error {
 		member_create, _ := jsonparser.GetString(value, "member_create")
 		member_update, _ := jsonparser.GetString(value, "member_update")
 
+		var objwebsiteagen entities.Model_memberagen
+		var arraobjwebsiteagen []entities.Model_memberagen
+		record_memberagen_RD, _, _, _ := jsonparser.Get(value, "member_agen")
+		jsonparser.ArrayEach(record_memberagen_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			memberagen_id, _ := jsonparser.GetInt(value, "memberagen_id")
+			memberagen_username, _ := jsonparser.GetString(value, "memberagen_username")
+			memberagen_website, _ := jsonparser.GetString(value, "memberagen_website")
+
+			objwebsiteagen.Memberagen_id = int(memberagen_id)
+			objwebsiteagen.Memberagen_username = memberagen_username
+			objwebsiteagen.Memberagen_website = memberagen_website
+			arraobjwebsiteagen = append(arraobjwebsiteagen, objwebsiteagen)
+		})
+
 		obj.Member_phone = member_phone
 		obj.Member_name = member_name
+		obj.Member_agen = arraobjwebsiteagen
 		obj.Member_create = member_create
 		obj.Member_update = member_update
 		arraobj = append(arraobj, obj)
@@ -96,16 +111,12 @@ func Memberagenhome(c *fiber.Ctx) error {
 	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
 	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
 		memberagen_id, _ := jsonparser.GetInt(value, "memberagen_id")
-		memberagen_idwebagen, _ := jsonparser.GetInt(value, "memberagen_idwebagen")
 		memberagen_username, _ := jsonparser.GetString(value, "memberagen_username")
-		memberagen_create, _ := jsonparser.GetString(value, "memberagen_create")
-		memberagen_update, _ := jsonparser.GetString(value, "memberagen_update")
+		memberagen_website, _ := jsonparser.GetString(value, "memberagen_website")
 
 		obj.Memberagen_id = int(memberagen_id)
-		obj.Memberagen_idwebagen = int(memberagen_idwebagen)
 		obj.Memberagen_username = memberagen_username
-		obj.Memberagen_create = memberagen_create
-		obj.Memberagen_update = memberagen_update
+		obj.Memberagen_website = memberagen_website
 		arraobj = append(arraobj, obj)
 	})
 
@@ -170,7 +181,7 @@ func MemberSave(c *fiber.Ctx) error {
 	// idrecord int
 	result, err := models.Save_member(
 		client_admin,
-		client.Member_phone, client.Member_name, client.Sdata, client.Member_phone)
+		client.Member_phone, client.Member_name, string(client.Member_listagen), client.Sdata, client.Member_phone)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{

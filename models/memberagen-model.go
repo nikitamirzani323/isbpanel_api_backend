@@ -10,6 +10,7 @@ import (
 	"bitbucket.org/isbtotogroup/isbpanel_api_backend/db"
 	"bitbucket.org/isbtotogroup/isbpanel_api_backend/entities"
 	"bitbucket.org/isbtotogroup/isbpanel_api_backend/helpers"
+	"github.com/buger/jsonparser"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nleeper/goment"
 )
@@ -52,8 +53,32 @@ func Fetch_member() (helpers.Response, error) {
 			update = updatemember_db + ", " + updatedatemember_db
 		}
 
+		//WEBSITE AGEN
+		var objwebsiteagen entities.Model_memberagen
+		var arraobjwebsiteagen []entities.Model_memberagen
+		sql_selectwebsiteagen := `SELECT 
+			A.idmemberagen, A.usernameagen, B.nmwebagen  
+			FROM ` + configs.DB_tbl_trx_memberagen + ` as A 
+			JOIN ` + configs.DB_tbl_mst_websiteagen + ` as B ON B.idwebagen = A.idwebagen 
+			WHERE A.phonemember = $1   
+		`
+		row_websiteagen, err := con.QueryContext(ctx, sql_selectwebsiteagen, phonemember_db)
+		helpers.ErrorCheck(err)
+		for row_websiteagen.Next() {
+			var (
+				idmemberagen_db               int
+				usernameagen_db, nmwebagen_db string
+			)
+			err = row_websiteagen.Scan(&idmemberagen_db, &usernameagen_db, &nmwebagen_db)
+			objwebsiteagen.Memberagen_id = idmemberagen_db
+			objwebsiteagen.Memberagen_username = usernameagen_db
+			objwebsiteagen.Memberagen_website = nmwebagen_db
+			arraobjwebsiteagen = append(arraobjwebsiteagen, objwebsiteagen)
+		}
+
 		obj.Member_phone = phonemember_db
 		obj.Member_name = nmmember_db
+		obj.Member_agen = arraobjwebsiteagen
 		obj.Member_create = create
 		obj.Member_update = update
 		arraobj = append(arraobj, obj)
@@ -78,42 +103,29 @@ func Fetch_memberagen(phone string) (helpers.Response, error) {
 	start := time.Now()
 
 	sql_select := `SELECT 
-		idmemberagen, idwebagen, usernameagen,   
-		creatememberagen, to_char(COALESCE(createdatememberagen,now()), 'YYYY-MM-DD HH24:MI:SS'), 
-		updatememberagen, to_char(COALESCE(updatedatememberagen,now()), 'YYYY-MM-DD HH24:MI:SS') 
-		FROM ` + configs.DB_tbl_trx_memberagen + `  
-		WHERE phonemember=$1 
-		ORDER BY createdatememberagen DESC     
+		A.idmemberagen, A.usernameagen, B.nmwebagen  
+		FROM ` + configs.DB_tbl_trx_memberagen + ` as A 
+		JOIN ` + configs.DB_tbl_mst_websiteagen + ` as B ON B.idwebagen = A.idwebagen 
+		WHERE A.phonemember = $1  
+		ORDER BY A.createdatememberagen DESC  
 	`
 
 	row, err := con.QueryContext(ctx, sql_select)
 	helpers.ErrorCheck(err)
 	for row.Next() {
 		var (
-			idmemberagen_db, idwebagen_db                                                              int
-			usernameagen_db                                                                            string
-			creatememberagen_db, createdatememberagen_db, updatememberagen_db, updatedatememberagen_db string
+			idmemberagen_db               int
+			usernameagen_db, nmwebagen_db string
 		)
 
-		err = row.Scan(&idmemberagen_db, &idwebagen_db,
-			&usernameagen_db,
-			&creatememberagen_db, &createdatememberagen_db, &updatememberagen_db, &updatedatememberagen_db, &phone)
+		err = row.Scan(&idmemberagen_db, &usernameagen_db,
+			&nmwebagen_db, &phone)
 
 		helpers.ErrorCheck(err)
-		create := ""
-		update := ""
-		if creatememberagen_db != "" {
-			create = creatememberagen_db + ", " + createdatememberagen_db
-		}
-		if updatememberagen_db != "" {
-			update = updatememberagen_db + ", " + updatedatememberagen_db
-		}
 
 		obj.Memberagen_id = idmemberagen_db
-		obj.Memberagen_idwebagen = idwebagen_db
 		obj.Memberagen_username = usernameagen_db
-		obj.Memberagen_create = create
-		obj.Memberagen_update = update
+		obj.Memberagen_website = nmwebagen_db
 		arraobj = append(arraobj, obj)
 		msg = "Success"
 	}
@@ -127,7 +139,7 @@ func Fetch_memberagen(phone string) (helpers.Response, error) {
 	return res, nil
 }
 func Save_member(
-	admin, phone, nama, sData string,
+	admin, phone, nama, listagen, sData string,
 	idrecord string) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"
@@ -154,6 +166,39 @@ func Save_member(
 
 			if flag_insert {
 				msg = "Succes"
+
+				//WEBSITE AGEN
+				jsonsource := []byte(listagen)
+				jsonparser.ArrayEach(jsonsource, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+					agen_website, _ := jsonparser.GetInt(value, "agen_website")
+					agen_username, _ := jsonparser.GetString(value, "agen_username")
+
+					log.Printf("%d - %s", int(agen_website), agen_username)
+
+					sql_insertagen := `
+							insert into
+							` + configs.DB_tbl_trx_memberagen + ` (
+								idmemberagen, idwebagen, phonemember, usernameagen, 
+								creatememberagen, createdatememberagen
+							) values (
+								$1, $2, $3, $4,
+								$5, $6
+							)
+						`
+					field_column := configs.DB_tbl_trx_memberagen + tglnow.Format("YYYY")
+					idrecord_counter := Get_counter(field_column)
+					flag_insertagen, msg_insertagen := Exec_SQL(sql_insertagen, configs.DB_tbl_trx_event, "INSERT",
+						tglnow.Format("YY")+strconv.Itoa(idrecord_counter), agen_website,
+						phone, agen_username,
+						admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
+
+					if flag_insertagen {
+						msg = "Succes"
+					} else {
+						log.Println(msg_insertagen)
+					}
+
+				})
 			} else {
 				log.Println(msg_insert)
 			}

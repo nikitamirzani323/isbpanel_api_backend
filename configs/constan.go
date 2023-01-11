@@ -23,7 +23,7 @@ const (
 	DB_tbl_mst_user              string = "tbl_mst_user"
 	DB_fos_user_table            string = "fos_user_table"
 	DB_tbl_trx_member            string = "tbl_trx_member"
-	DB_tbl_trx_memberagen        string = "tbl_trx_memberagen"
+	DB_tbl_trx_memberagen        string = "tbl_trx_member_agen"
 	DB_tbl_trx_event             string = "tbl_trx_event"
 	DB_tbl_trx_keluaran          string = "tbl_trx_keluaran"
 	DB_tbl_trx_prediksi          string = "tbl_trx_prediksi"

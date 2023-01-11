@@ -147,6 +147,7 @@ func Init() *fiber.App {
 	app.Post("/api/eventsave", middleware.JWTProtected(), controllers.EventSave)
 	app.Post("/api/member", middleware.JWTProtected(), controllers.Memberhome)
 	app.Post("/api/memberagen", middleware.JWTProtected(), controllers.Memberagenhome)
+	app.Post("/api/membersave", middleware.JWTProtected(), controllers.MemberSave)
 	app.Post("/api/memberagensave", middleware.JWTProtected(), controllers.MemberagenSave)
 	return app
 }

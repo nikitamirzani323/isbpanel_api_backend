@@ -14,7 +14,6 @@ import (
 )
 
 const Fieldmember_home_redis = "LISTMEMBER_BACKEND_ISBPANEL"
-const Fieldmemberagen_home_redis = "LISTMEMBERAGEN_BACKEND_ISBPANEL"
 
 func Memberhome(c *fiber.Ctx) error {
 	var obj entities.Model_member
@@ -33,11 +32,11 @@ func Memberhome(c *fiber.Ctx) error {
 		var arraobjwebsiteagen []entities.Model_memberagen
 		record_memberagen_RD, _, _, _ := jsonparser.Get(value, "member_agen")
 		jsonparser.ArrayEach(record_memberagen_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-			memberagen_id, _ := jsonparser.GetInt(value, "memberagen_id")
+			memberagen_idwebagen, _ := jsonparser.GetInt(value, "memberagen_idwebagen")
 			memberagen_username, _ := jsonparser.GetString(value, "memberagen_username")
 			memberagen_website, _ := jsonparser.GetString(value, "memberagen_website")
 
-			objwebsiteagen.Memberagen_id = int(memberagen_id)
+			objwebsiteagen.Memberagen_idwebagen = int(memberagen_idwebagen)
 			objwebsiteagen.Memberagen_username = memberagen_username
 			objwebsiteagen.Memberagen_website = memberagen_website
 			arraobjwebsiteagen = append(arraobjwebsiteagen, objwebsiteagen)
@@ -74,75 +73,7 @@ func Memberhome(c *fiber.Ctx) error {
 		})
 	}
 }
-func Memberagenhome(c *fiber.Ctx) error {
-	var errors []*helpers.ErrorResponse
-	client := new(entities.Controller_memberagen)
-	validate := validator.New()
-	if err := c.BodyParser(client); err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": err.Error(),
-			"record":  nil,
-		})
-	}
 
-	err := validate.Struct(client)
-	if err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			var element helpers.ErrorResponse
-			element.Field = err.StructField()
-			element.Tag = err.Tag()
-			errors = append(errors, &element)
-		}
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": "validation",
-			"record":  errors,
-		})
-	}
-
-	var obj entities.Model_memberagen
-	var arraobj []entities.Model_memberagen
-	render_page := time.Now()
-	resultredis, flag := helpers.GetRedis(Fieldmemberagen_home_redis + "_" + client.Memberagen_phone)
-	jsonredis := []byte(resultredis)
-	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
-	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		memberagen_id, _ := jsonparser.GetInt(value, "memberagen_id")
-		memberagen_username, _ := jsonparser.GetString(value, "memberagen_username")
-		memberagen_website, _ := jsonparser.GetString(value, "memberagen_website")
-
-		obj.Memberagen_id = int(memberagen_id)
-		obj.Memberagen_username = memberagen_username
-		obj.Memberagen_website = memberagen_website
-		arraobj = append(arraobj, obj)
-	})
-
-	if !flag {
-		result, err := models.Fetch_memberagen(client.Memberagen_phone)
-		if err != nil {
-			c.Status(fiber.StatusBadRequest)
-			return c.JSON(fiber.Map{
-				"status":  fiber.StatusBadRequest,
-				"message": err.Error(),
-				"record":  nil,
-			})
-		}
-		helpers.SetRedis(Fieldmemberagen_home_redis+"_"+client.Memberagen_phone, result, 60*time.Minute)
-		log.Println("MEMBER AGEN MYSQL")
-		return c.JSON(result)
-	} else {
-		log.Println("DOMAIN CACHE")
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusOK,
-			"message": "Success",
-			"record":  arraobj,
-			"time":    time.Since(render_page).String(),
-		})
-	}
-}
 func MemberSave(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
 	client := new(entities.Controller_membersave)
@@ -194,59 +125,9 @@ func MemberSave(c *fiber.Ctx) error {
 	_deleteredis_memberagen(client.Member_phone)
 	return c.JSON(result)
 }
-func MemberagenSave(c *fiber.Ctx) error {
-	var errors []*helpers.ErrorResponse
-	client := new(entities.Controller_memberagensave)
-	validate := validator.New()
-	if err := c.BodyParser(client); err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": err.Error(),
-			"record":  nil,
-		})
-	}
 
-	err := validate.Struct(client)
-	if err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			var element helpers.ErrorResponse
-			element.Field = err.StructField()
-			element.Tag = err.Tag()
-			errors = append(errors, &element)
-		}
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": "validation",
-			"record":  errors,
-		})
-	}
-	user := c.Locals("jwt").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
-	temp_decp := helpers.Decryption(name)
-	client_admin, _ := helpers.Parsing_Decry(temp_decp, "==")
-
-	result, err := models.Save_memberagen(
-		client_admin,
-		client.Memberagen_username, client.Memberagen_phone, client.Sdata, client.Memberagen_idwebagen, client.Memberagen_id)
-	if err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": err.Error(),
-			"record":  nil,
-		})
-	}
-
-	_deleteredis_memberagen(client.Memberagen_phone)
-	return c.JSON(result)
-}
 func _deleteredis_memberagen(phone string) {
 	val_member := helpers.DeleteRedis(Fieldmember_home_redis)
 	log.Printf("Redis Delete BACKEND MEMBER  : %d", val_member)
-	val_memberagen := helpers.DeleteRedis(Fieldmemberagen_home_redis + "_" + phone)
-	log.Printf("Redis Delete BACKEND MEMBER AGEN : %d", val_memberagen)
 
 }

@@ -57,20 +57,20 @@ func Fetch_member() (helpers.Response, error) {
 		var objwebsiteagen entities.Model_memberagen
 		var arraobjwebsiteagen []entities.Model_memberagen
 		sql_selectwebsiteagen := `SELECT 
-			A.idmemberagen, A.usernameagen, B.nmwebagen  
+			A.idwebagen, A.usernameagen, B.nmwebagen  
 			FROM ` + configs.DB_tbl_trx_memberagen + ` as A 
 			JOIN ` + configs.DB_tbl_mst_websiteagen + ` as B ON B.idwebagen = A.idwebagen 
 			WHERE A.phonemember = $1   
 		`
-		row_websiteagen, err := con.QueryContext(ctx, sql_selectwebsiteagen, phonemember_db)
-		helpers.ErrorCheck(err)
+		row_websiteagen, err_websiteagen := con.QueryContext(ctx, sql_selectwebsiteagen, phonemember_db)
+		helpers.ErrorCheck(err_websiteagen)
 		for row_websiteagen.Next() {
 			var (
-				idmemberagen_db               int
+				idwebagen_db                  int
 				usernameagen_db, nmwebagen_db string
 			)
-			err = row_websiteagen.Scan(&idmemberagen_db, &usernameagen_db, &nmwebagen_db)
-			objwebsiteagen.Memberagen_id = idmemberagen_db
+			err_websiteagen = row_websiteagen.Scan(&idwebagen_db, &usernameagen_db, &nmwebagen_db)
+			objwebsiteagen.Memberagen_idwebagen = idwebagen_db
 			objwebsiteagen.Memberagen_username = usernameagen_db
 			objwebsiteagen.Memberagen_website = nmwebagen_db
 			arraobjwebsiteagen = append(arraobjwebsiteagen, objwebsiteagen)
@@ -81,51 +81,6 @@ func Fetch_member() (helpers.Response, error) {
 		obj.Member_agen = arraobjwebsiteagen
 		obj.Member_create = create
 		obj.Member_update = update
-		arraobj = append(arraobj, obj)
-		msg = "Success"
-	}
-	defer row.Close()
-
-	res.Status = fiber.StatusOK
-	res.Message = msg
-	res.Record = arraobj
-	res.Time = time.Since(start).String()
-
-	return res, nil
-}
-func Fetch_memberagen(phone string) (helpers.Response, error) {
-	var obj entities.Model_memberagen
-	var arraobj []entities.Model_memberagen
-	var res helpers.Response
-	msg := "Data Not Found"
-	con := db.CreateCon()
-	ctx := context.Background()
-	start := time.Now()
-
-	sql_select := `SELECT 
-		A.idmemberagen, A.usernameagen, B.nmwebagen  
-		FROM ` + configs.DB_tbl_trx_memberagen + ` as A 
-		JOIN ` + configs.DB_tbl_mst_websiteagen + ` as B ON B.idwebagen = A.idwebagen 
-		WHERE A.phonemember = $1  
-		ORDER BY A.createdatememberagen DESC  
-	`
-
-	row, err := con.QueryContext(ctx, sql_select)
-	helpers.ErrorCheck(err)
-	for row.Next() {
-		var (
-			idmemberagen_db               int
-			usernameagen_db, nmwebagen_db string
-		)
-
-		err = row.Scan(&idmemberagen_db, &usernameagen_db,
-			&nmwebagen_db, &phone)
-
-		helpers.ErrorCheck(err)
-
-		obj.Memberagen_id = idmemberagen_db
-		obj.Memberagen_username = usernameagen_db
-		obj.Memberagen_website = nmwebagen_db
 		arraobj = append(arraobj, obj)
 		msg = "Success"
 	}
@@ -168,37 +123,7 @@ func Save_member(
 				msg = "Succes"
 
 				//WEBSITE AGEN
-				jsonsource := []byte(listagen)
-				jsonparser.ArrayEach(jsonsource, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-					agen_website, _ := jsonparser.GetInt(value, "agen_website")
-					agen_username, _ := jsonparser.GetString(value, "agen_username")
-
-					log.Printf("%d - %s", int(agen_website), agen_username)
-
-					sql_insertagen := `
-							insert into
-							` + configs.DB_tbl_trx_memberagen + ` (
-								idmemberagen, idwebagen, phonemember, usernameagen, 
-								creatememberagen, createdatememberagen
-							) values (
-								$1, $2, $3, $4,
-								$5, $6
-							)
-						`
-					field_column := configs.DB_tbl_trx_memberagen + tglnow.Format("YYYY")
-					idrecord_counter := Get_counter(field_column)
-					flag_insertagen, msg_insertagen := Exec_SQL(sql_insertagen, configs.DB_tbl_trx_event, "INSERT",
-						tglnow.Format("YY")+strconv.Itoa(idrecord_counter), agen_website,
-						phone, agen_username,
-						admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
-
-					if flag_insertagen {
-						msg = "Succes"
-					} else {
-						log.Println(msg_insertagen)
-					}
-
-				})
+				_save_memberagen(admin, phone, listagen)
 			} else {
 				log.Println(msg_insert)
 			}
@@ -221,6 +146,8 @@ func Save_member(
 		if flag_update {
 			flag = true
 			msg = "Succes"
+			_delete_memberagen(phone)
+			_save_memberagen(admin, phone, listagen)
 		} else {
 			log.Println(msg_update)
 		}
@@ -233,75 +160,44 @@ func Save_member(
 
 	return res, nil
 }
-func Save_memberagen(
-	admin, username, phone, sData string,
-	idwebagen, idrecord int) (helpers.Response, error) {
-	var res helpers.Response
-	msg := "Failed"
+func _save_memberagen(admin, phone, listagen string) {
 	tglnow, _ := goment.New()
-	render_page := time.Now()
+	jsonsource := []byte(listagen)
+	jsonparser.ArrayEach(jsonsource, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		agen_idwebsite, _ := jsonparser.GetInt(value, "agen_idwebsite")
+		agen_username, _ := jsonparser.GetString(value, "agen_username")
 
-	if sData == "New" {
-		sql_insert := `
-				insert into
-				` + configs.DB_tbl_trx_memberagen + ` (
-					idmemberagen, idwebagen, phonemember, usernameagen, 
-					creatememberagen, createdatememberagen
-				) values (
-					$1, $2, $3, $4,
-					$5, $6
-				)
-			`
+		sql_insertagen := `
+					insert into
+					` + configs.DB_tbl_trx_memberagen + ` (
+						idmemberagen, idwebagen, phonemember, usernameagen, 
+						creatememberagen, createdatememberagen
+					) values (
+						$1, $2, $3, $4,
+						$5, $6
+					)
+				`
 		field_column := configs.DB_tbl_trx_memberagen + tglnow.Format("YYYY")
 		idrecord_counter := Get_counter(field_column)
-		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_event, "INSERT",
-			tglnow.Format("YY")+strconv.Itoa(idrecord_counter), idwebagen,
-			phone, username,
+		flag_insertagen, msg_insertagen := Exec_SQL(sql_insertagen, configs.DB_tbl_trx_event, "INSERT",
+			tglnow.Format("YY")+strconv.Itoa(idrecord_counter), agen_idwebsite,
+			phone, agen_username,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 
-		if flag_insert {
-			msg = "Succes"
-		} else {
-			log.Println(msg_insert)
+		if !flag_insertagen {
+			log.Println(msg_insertagen)
 		}
-	}
-
-	res.Status = fiber.StatusOK
-	res.Message = msg
-	res.Record = nil
-	res.Time = time.Since(render_page).String()
-
-	return res, nil
+	})
 }
-func Delete_memberagen(phone string, idrecord int) (helpers.Response, error) {
-	var res helpers.Response
-	msg := "Failed"
-	render_page := time.Now()
-	flag := false
-
-	flag = CheckDBTwoField(configs.DB_tbl_trx_memberagen, "idmemberagen", strconv.Itoa(idrecord), "phonemember", phone)
-	if flag {
-		sql_delete := `
+func _delete_memberagen(phone string) {
+	sql_delete := `
 				DELETE FROM
 				` + configs.DB_tbl_trx_memberagen + ` 
-				WHERE idmemberagen=$1 AND phonemember=$2 
+				WHERE phonemember=$1  
 			`
-		flag_delete, msg_delete := Exec_SQL(sql_delete, configs.DB_tbl_trx_memberagen, "DELETE", idrecord, phone)
+	flag_delete, msg_delete := Exec_SQL(sql_delete, configs.DB_tbl_trx_memberagen, "DELETE", phone)
 
-		if flag_delete {
-			flag = true
-			msg = "Succes"
-		} else {
-			log.Println(msg_delete)
-		}
-	} else {
-		msg = "Data Not Found"
+	if !flag_delete {
+		log.Println(msg_delete)
 	}
-
-	res.Status = fiber.StatusOK
-	res.Message = msg
-	res.Record = nil
-	res.Time = time.Since(render_page).String()
-
-	return res, nil
 }

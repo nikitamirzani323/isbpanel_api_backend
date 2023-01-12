@@ -10,9 +10,9 @@ type Model_member struct {
 	Member_update string      `json:"member_update"`
 }
 type Model_memberagen struct {
-	Memberagen_id       int    `json:"memberagen_id"`
-	Memberagen_website  string `json:"memberagen_website"`
-	Memberagen_username string `json:"memberagen_username"`
+	Memberagen_idwebagen int    `json:"memberagen_idwebagen"`
+	Memberagen_website   string `json:"memberagen_website"`
+	Memberagen_username  string `json:"memberagen_username"`
 }
 
 type Controller_membersave struct {
@@ -24,12 +24,4 @@ type Controller_membersave struct {
 }
 type Controller_memberagen struct {
 	Memberagen_phone string `json:"memberagen_phone" validate:"required"`
-}
-type Controller_memberagensave struct {
-	Sdata                string `json:"sdata" validate:"required"`
-	Page                 string `json:"page" validate:"required"`
-	Memberagen_id        int    `json:"memberagen_id"`
-	Memberagen_idwebagen int    `json:"memberagen_idwebagen" validate:"required"`
-	Memberagen_phone     string `json:"memberagen_phone" validate:"required"`
-	Memberagen_username  string `json:"memberagen_username" validate:"required"`
 }

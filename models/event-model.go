@@ -24,11 +24,13 @@ func Fetch_event() (helpers.Response, error) {
 	start := time.Now()
 
 	sql_select := `SELECT 
-		idevent , idwebagen, nmevent,  
-		startevent , endevent, 
-		createevent, to_char(COALESCE(createdateevent,now()), 'YYYY-MM-DD HH24:MI:SS'), 
-		updateevent, to_char(COALESCE(updatedateevent,now()), 'YYYY-MM-DD HH24:MI:SS') 
-		FROM ` + configs.DB_tbl_trx_event + `  
+		A.idevent , A.idwebagen, B.nmwebagen, A.nmevent,  
+		to_char(COALESCE(A.startevent,now()), 'YYYY-MM-DD HH24:MI:SS'), 
+		to_char(COALESCE(A.endevent,now()), 'YYYY-MM-DD HH24:MI:SS'), 
+		createevent, to_char(COALESCE(A.createdateevent,now()), 'YYYY-MM-DD HH24:MI:SS'), 
+		updateevent, to_char(COALESCE(A.updatedateevent,now()), 'YYYY-MM-DD HH24:MI:SS') 
+		FROM ` + configs.DB_tbl_trx_event + ` as A 
+		JOIN ` + configs.DB_tbl_mst_websiteagen + ` as B ON B.idwebagen = A.idwebagen   
 		ORDER BY createdateevent DESC     
 	`
 
@@ -37,12 +39,12 @@ func Fetch_event() (helpers.Response, error) {
 	for row.Next() {
 		var (
 			idevent_db, idwebagen_db                                               int
-			nmevent_db, startevent_db, endevent_db                                 string
+			nmevent_db, nmwebagen_db, startevent_db, endevent_db                   string
 			createevent_db, createdateevent_db, updateevent_db, updatedateevent_db string
 		)
 
 		err = row.Scan(&idevent_db, &idwebagen_db,
-			&nmevent_db, &startevent_db, &endevent_db,
+			&nmwebagen_db, &nmevent_db, &startevent_db, &endevent_db,
 			&createevent_db, &createdateevent_db, &updateevent_db, &updatedateevent_db)
 
 		helpers.ErrorCheck(err)
@@ -57,6 +59,7 @@ func Fetch_event() (helpers.Response, error) {
 
 		obj.Event_id = idevent_db
 		obj.Event_idwebagen = idwebagen_db
+		obj.Event_nmwebagen = nmwebagen_db
 		obj.Event_name = nmevent_db
 		obj.Event_startevent = startevent_db
 		obj.Event_endevent = endevent_db

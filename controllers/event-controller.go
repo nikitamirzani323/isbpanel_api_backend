@@ -25,6 +25,7 @@ func Eventhome(c *fiber.Ctx) error {
 	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
 		event_id, _ := jsonparser.GetInt(value, "event_id")
 		event_idwebagen, _ := jsonparser.GetInt(value, "event_idwebagen")
+		event_nmwebagen, _ := jsonparser.GetString(value, "event_nmwebagen")
 		event_name, _ := jsonparser.GetString(value, "event_name")
 		event_startevent, _ := jsonparser.GetString(value, "event_startevent")
 		event_endevent, _ := jsonparser.GetString(value, "event_endevent")
@@ -33,6 +34,7 @@ func Eventhome(c *fiber.Ctx) error {
 
 		obj.Event_id = int(event_id)
 		obj.Event_idwebagen = int(event_idwebagen)
+		obj.Event_nmwebagen = event_nmwebagen
 		obj.Event_name = event_name
 		obj.Event_startevent = event_startevent
 		obj.Event_endevent = event_endevent

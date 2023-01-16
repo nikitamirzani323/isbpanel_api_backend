@@ -3,6 +3,7 @@ package entities
 type Model_event struct {
 	Event_id         int    `json:"event_id"`
 	Event_idwebagen  int    `json:"event_idwebagen"`
+	Event_nmwebagen  string `json:"event_nmwebagen"`
 	Event_name       string `json:"event_name"`
 	Event_startevent string `json:"event_startevent"`
 	Event_endevent   string `json:"event_endevent"`

@@ -138,3 +138,125 @@ func Save_event(
 
 	return res, nil
 }
+func Fetchdetail_event(idevent int) (helpers.Response, error) {
+	var obj entities.Model_eventdetail
+	var arraobj []entities.Model_eventdetail
+	var res helpers.Response
+	msg := "Data Not Found"
+	con := db.CreateCon()
+	ctx := context.Background()
+	start := time.Now()
+
+	sql_select := `SELECT 
+		A.ideventdetail , A.voucher, A.deposit,  
+		B.phonemember , B.usernameagen, 
+		createeventdetail, to_char(COALESCE(A.createdateeventdetail,now()), 'YYYY-MM-DD HH24:MI:SS'), 
+		updateeventdetail, to_char(COALESCE(A.updatedateeventdetail,now()), 'YYYY-MM-DD HH24:MI:SS') 
+		FROM ` + configs.DB_tbl_trx_event_detail + ` as A 
+		JOIN ` + configs.DB_tbl_trx_memberagen + ` as B ON B.idmemberagen = A.idmemberagen    
+		WHERE A.idevent=$1 
+		ORDER BY A.createdateeventdetail DESC     
+	`
+
+	row, err := con.QueryContext(ctx, sql_select, idevent)
+	helpers.ErrorCheck(err)
+	for row.Next() {
+		var (
+			ideventdetail_db, deposit_db                                                                   int
+			voucher_db, phonemember_db, usernameagen_db                                                    string
+			createeventdetail_db, createdateeventdetail_db, updateeventdetail_db, updatedateeventdetail_db string
+		)
+
+		err = row.Scan(&ideventdetail_db, &voucher_db,
+			&deposit_db, &phonemember_db, &usernameagen_db,
+			&createeventdetail_db, &createdateeventdetail_db, &updateeventdetail_db, &updatedateeventdetail_db)
+
+		helpers.ErrorCheck(err)
+		create := ""
+		update := ""
+		if createeventdetail_db != "" {
+			create = createeventdetail_db + ", " + createdateeventdetail_db
+		}
+		if updateeventdetail_db != "" {
+			update = updateeventdetail_db + ", " + updatedateeventdetail_db
+		}
+
+		obj.Eventdetail_iddetail = ideventdetail_db
+		obj.Eventdetail_phone = phonemember_db
+		obj.Eventdetail_username = usernameagen_db
+		obj.Eventdetail_voucher = voucher_db
+		obj.Eventdetail_deposit = deposit_db
+		obj.Eventdetail_create = create
+		obj.Eventdetail_update = update
+		arraobj = append(arraobj, obj)
+		msg = "Success"
+	}
+	defer row.Close()
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = arraobj
+	res.Time = time.Since(start).String()
+
+	return res, nil
+}
+func Savedetail_event(
+	admin, sData string,
+	idevent, idmemberagen, deposit, idrecord int) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	tglnow, _ := goment.New()
+	render_page := time.Now()
+
+	if sData == "New" {
+		voucher := "23011717011"
+		sql_insert := `
+				insert into
+				` + configs.DB_tbl_trx_event_detail + ` (
+					ideventdetail , idevent, idmemberagen,  
+					voucher , deposit,  
+					createeventdetail, createdateeventdetail
+				) values (
+					$1, $2, $3, 
+					$4, $5,  
+					$6, $7
+				)
+			`
+		field_column := configs.DB_tbl_trx_event_detail + tglnow.Format("YYYY")
+		idrecord_counter := Get_counter(field_column)
+		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_event_detail, "INSERT",
+			tglnow.Format("YY")+tglnow.Format("MM")+tglnow.Format("DD")+strconv.Itoa(idrecord_counter),
+			idevent, idmemberagen, voucher, deposit,
+			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
+
+		if flag_insert {
+			msg = "Succes"
+		} else {
+			log.Println(msg_insert)
+		}
+	} else {
+		sql_update := `
+				UPDATE 
+				` + configs.DB_tbl_trx_event_detail + `  
+				SET deposit=$1, 
+				updateeventdetail=$2, updatedateeventdetail=$3 
+				WHERE ideventdetail=$4   
+			`
+
+		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_event_detail, "UPDATE",
+			deposit, admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
+
+		if flag_update {
+			msg = "Succes"
+		} else {
+			log.Println(msg_update)
+		}
+	}
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
+
+	return res, nil
+}

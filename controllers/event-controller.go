@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"log"
+	"strconv"
 	"time"
 
 	"bitbucket.org/isbtotogroup/isbpanel_api_backend/entities"
@@ -14,6 +15,7 @@ import (
 )
 
 const Fieldevent_home_redis = "LISTEVENT_BACKEND_ISBPANEL"
+const Fieldeventdetail_home_redis = "LISTEVENTDETAIL_BACKEND_ISBPANEL"
 
 func Eventhome(c *fiber.Ctx) error {
 	var obj entities.Model_event
@@ -58,6 +60,82 @@ func Eventhome(c *fiber.Ctx) error {
 		return c.JSON(result)
 	} else {
 		log.Println("EVENT CACHE")
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusOK,
+			"message": "Success",
+			"record":  arraobj,
+			"time":    time.Since(render_page).String(),
+		})
+	}
+}
+func Eventdetailhome(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_eventdetail)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+	var obj entities.Model_eventdetail
+	var arraobj []entities.Model_eventdetail
+	render_page := time.Now()
+	resultredis, flag := helpers.GetRedis(Fieldeventdetail_home_redis + "_" + strconv.Itoa(client.Event_id))
+	jsonredis := []byte(resultredis)
+	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
+	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		eventdetail_id, _ := jsonparser.GetInt(value, "eventdetail_id")
+		eventdetail_deposit, _ := jsonparser.GetInt(value, "eventdetail_deposit")
+		eventdetail_voucher, _ := jsonparser.GetString(value, "eventdetail_voucher")
+		eventdetail_phone, _ := jsonparser.GetString(value, "eventdetail_phone")
+		eventdetail_username, _ := jsonparser.GetString(value, "eventdetail_username")
+		eventdetail_create, _ := jsonparser.GetString(value, "eventdetail_create")
+		eventdetail_update, _ := jsonparser.GetString(value, "eventdetail_update")
+
+		obj.Eventdetail_iddetail = int(eventdetail_id)
+		obj.Eventdetail_deposit = int(eventdetail_deposit)
+		obj.Eventdetail_voucher = eventdetail_voucher
+		obj.Eventdetail_phone = eventdetail_phone
+		obj.Eventdetail_username = eventdetail_username
+		obj.Eventdetail_create = eventdetail_create
+		obj.Eventdetail_update = eventdetail_update
+		arraobj = append(arraobj, obj)
+	})
+
+	if !flag {
+		result, err := models.Fetchdetail_event(client.Event_id)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"status":  fiber.StatusBadRequest,
+				"message": err.Error(),
+				"record":  nil,
+			})
+		}
+		helpers.SetRedis(Fieldeventdetail_home_redis+"_"+strconv.Itoa(client.Event_id), result, 60*time.Minute)
+		log.Println("EVENT DETAIL  MYSQL")
+		return c.JSON(result)
+	} else {
+		log.Println("EVENT DETAIL CACHE")
 		return c.JSON(fiber.Map{
 			"status":  fiber.StatusOK,
 			"message": "Success",
@@ -115,11 +193,66 @@ func EventSave(c *fiber.Ctx) error {
 		})
 	}
 
-	_deleteredis_event()
+	_deleteredis_event(0)
 	return c.JSON(result)
 }
-func _deleteredis_event() {
+func EventDetailSave(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_eventdetailsave)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+	user := c.Locals("jwt").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	temp_decp := helpers.Decryption(name)
+	client_admin, _ := helpers.Parsing_Decry(temp_decp, "==")
+
+	// admin, sData string,
+	// idevent, idmemberagen, deposit, idrecord int
+	result, err := models.Savedetail_event(
+		client_admin,
+		client.Sdata, client.Eventdetail_idevent, client.Eventdetail_idmemberagen,
+		client.Eventdetail_deposit, client.Eventdetail_id)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	_deleteredis_event(client.Eventdetail_idevent)
+	return c.JSON(result)
+}
+func _deleteredis_event(idevent int) {
 	val_master := helpers.DeleteRedis(Fieldevent_home_redis)
 	log.Printf("Redis Delete BACKEND EVENT : %d", val_master)
+
+	val_detail := helpers.DeleteRedis(Fieldeventdetail_home_redis + "_" + strconv.Itoa(idevent))
+	log.Printf("Redis Delete BACKEND EVENT DELETE : %d", val_detail)
 
 }

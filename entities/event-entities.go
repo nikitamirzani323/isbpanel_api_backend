@@ -10,6 +10,20 @@ type Model_event struct {
 	Event_create     string `json:"event_create"`
 	Event_update     string `json:"event_update"`
 }
+type Model_eventdetail struct {
+	Eventdetail_iddetail int    `json:"eventdetail_id"`
+	Eventdetail_voucher  string `json:"eventdetail_voucher"`
+	Eventdetail_deposit  int    `json:"eventdetail_deposit"`
+	Eventdetail_phone    string `json:"eventdetail_phone"`
+	Eventdetail_username string `json:"eventdetail_username"`
+	Eventdetail_create   string `json:"eventdetail_create"`
+	Eventdetail_update   string `json:"eventdetail_update"`
+}
+type Controller_eventdetail struct {
+	Sdata    string `json:"sdata" validate:"required"`
+	Page     string `json:"page" validate:"required"`
+	Event_id int    `json:"event_id"`
+}
 type Controller_eventsave struct {
 	Sdata            string `json:"sdata" validate:"required"`
 	Page             string `json:"page" validate:"required"`
@@ -18,4 +32,12 @@ type Controller_eventsave struct {
 	Event_name       string `json:"event_name" validate:"required"`
 	Event_startevent string `json:"event_startevent" validate:"required"`
 	Event_endevent   string `json:"event_endevent" validate:"required"`
+}
+type Controller_eventdetailsave struct {
+	Sdata                    string `json:"sdata" validate:"required"`
+	Page                     string `json:"page" validate:"required"`
+	Eventdetail_id           int    `json:"eventdetail_id"`
+	Eventdetail_idevent      int    `json:"eventdetail_idevent"`
+	Eventdetail_idmemberagen int    `json:"eventdetail_idmemberagen" validate:"required"`
+	Eventdetail_deposit      int    `json:"eventdetail_deposit" validate:"required"`
 }

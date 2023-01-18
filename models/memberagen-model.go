@@ -93,6 +93,55 @@ func Fetch_member() (helpers.Response, error) {
 
 	return res, nil
 }
+func Fetch_memberSelect(idwebagen int) (helpers.Response, error) {
+	var obj entities.Model_memberagenselect
+	var arraobj []entities.Model_memberagenselect
+	var res helpers.Response
+	msg := "Data Not Found"
+	con := db.CreateCon()
+	ctx := context.Background()
+	start := time.Now()
+
+	sql_select := `SELECT 
+		A.idmemberagen, A.phonemember, A.usernameagen, C.nmmember, 
+		B.nmwebagen 
+		FROM ` + configs.DB_tbl_trx_memberagen + ` as A   
+		JOIN ` + configs.DB_tbl_mst_websiteagen + ` as B ON B.idwebagen = A.idwebagen    
+		JOIN ` + configs.DB_tbl_trx_member + ` as C ON C.phonemember = A.phonemember    
+		WHERE A.idwebagen = $1 
+		ORDER BY C.nmmember ASC      
+	`
+
+	row, err := con.QueryContext(ctx, sql_select, idwebagen)
+	helpers.ErrorCheck(err)
+	for row.Next() {
+		var (
+			idmemberagen_db                                            int
+			phonemember_db, usernameagen_db, nmmember_db, nmwebagen_db string
+		)
+
+		err = row.Scan(&idmemberagen_db, &phonemember_db,
+			&usernameagen_db, &nmmember_db, &nmwebagen_db)
+
+		helpers.ErrorCheck(err)
+
+		obj.Memberagen_id = idmemberagen_db
+		obj.Memberagen_username = usernameagen_db
+		obj.Memberagen_phone = phonemember_db
+		obj.Memberagen_website = nmwebagen_db
+		obj.Memberagen_name = nmmember_db
+		arraobj = append(arraobj, obj)
+		msg = "Success"
+	}
+	defer row.Close()
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = arraobj
+	res.Time = time.Since(start).String()
+
+	return res, nil
+}
 func Save_member(
 	admin, phone, nama, listagen, sData string,
 	idrecord string) (helpers.Response, error) {

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"log"
+	"strconv"
 	"time"
 
 	"bitbucket.org/isbtotogroup/isbpanel_api_backend/entities"
@@ -14,6 +15,7 @@ import (
 )
 
 const Fieldmember_home_redis = "LISTMEMBER_BACKEND_ISBPANEL"
+const Fieldmemberselect_home_redis = "LISTMEMBERSELECT_BACKEND_ISBPANEL"
 
 func Memberhome(c *fiber.Ctx) error {
 	var obj entities.Model_member
@@ -73,7 +75,78 @@ func Memberhome(c *fiber.Ctx) error {
 		})
 	}
 }
+func Memberhomeselect(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_memberagenselect)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
 
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+	var obj entities.Model_memberagenselect
+	var arraobj []entities.Model_memberagenselect
+	render_page := time.Now()
+	resultredis, flag := helpers.GetRedis(Fieldmemberselect_home_redis + "_" + strconv.Itoa(client.Memberagen_idwebagen))
+	jsonredis := []byte(resultredis)
+	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
+	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		memberagen_id, _ := jsonparser.GetInt(value, "memberagen_id")
+		memberagen_website, _ := jsonparser.GetString(value, "memberagen_website")
+		memberagen_username, _ := jsonparser.GetString(value, "memberagen_username")
+		memberagen_phone, _ := jsonparser.GetString(value, "memberagen_phone")
+		memberagen_name, _ := jsonparser.GetString(value, "memberagen_name")
+
+		obj.Memberagen_id = int(memberagen_id)
+		obj.Memberagen_website = memberagen_website
+		obj.Memberagen_username = memberagen_username
+		obj.Memberagen_phone = memberagen_phone
+		obj.Memberagen_name = memberagen_name
+		arraobj = append(arraobj, obj)
+	})
+
+	if !flag {
+		result, err := models.Fetch_memberSelect(client.Memberagen_idwebagen)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"status":  fiber.StatusBadRequest,
+				"message": err.Error(),
+				"record":  nil,
+			})
+		}
+		helpers.SetRedis(Fieldmemberselect_home_redis+"_"+strconv.Itoa(client.Memberagen_idwebagen), result, 60*time.Minute)
+		log.Println("MEMBER AGEN SELECT  MYSQL")
+		return c.JSON(result)
+	} else {
+		log.Println("MEMBER AGEN SELECT CACHE")
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusOK,
+			"message": "Success",
+			"record":  arraobj,
+			"time":    time.Since(render_page).String(),
+		})
+	}
+}
 func MemberSave(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
 	client := new(entities.Controller_membersave)
@@ -129,5 +202,8 @@ func MemberSave(c *fiber.Ctx) error {
 func _deleteredis_memberagen(phone string) {
 	val_member := helpers.DeleteRedis(Fieldmember_home_redis)
 	log.Printf("Redis Delete BACKEND MEMBER  : %d", val_member)
+
+	val_memberselect := helpers.DeleteRedis(Fieldmemberselect_home_redis)
+	log.Printf("Redis Delete BACKEND MEMBER SELECT  : %d", val_memberselect)
 
 }

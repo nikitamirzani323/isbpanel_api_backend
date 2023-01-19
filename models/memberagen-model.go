@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"strconv"
 	"time"
@@ -249,4 +250,24 @@ func _delete_memberagen(phone string) {
 	if !flag_delete {
 		log.Println(msg_delete)
 	}
+}
+func _GetMemberAgen(idrecord int) (string, string) {
+	con := db.CreateCon()
+	ctx := context.Background()
+	phonemember := ""
+	usernameagen := ""
+
+	sql_select := `SELECT
+		phonemember, usernameagen   
+		FROM ` + configs.DB_tbl_trx_memberagen + `  
+		WHERE idmemberagen = $1 
+	`
+	row := con.QueryRowContext(ctx, sql_select, idrecord)
+	switch e := row.Scan(&phonemember, &usernameagen); e {
+	case sql.ErrNoRows:
+	case nil:
+	default:
+		helpers.ErrorCheck(e)
+	}
+	return phonemember, usernameagen
 }

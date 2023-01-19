@@ -20,6 +20,11 @@ type Model_eventdetail struct {
 	Eventdetail_create   string `json:"eventdetail_create"`
 	Eventdetail_update   string `json:"eventdetail_update"`
 }
+type Model_eventdetailgroup struct {
+	Eventdetailgroup_deposit  int    `json:"eventdetailgroup_deposit"`
+	Eventdetailgroup_phone    string `json:"eventdetailgroup_phone"`
+	Eventdetailgroup_username string `json:"eventdetailgroup_username"`
+}
 type Controller_eventdetail struct {
 	Sdata    string `json:"sdata" validate:"required"`
 	Page     string `json:"page" validate:"required"`

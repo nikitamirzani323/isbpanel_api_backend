@@ -201,6 +201,49 @@ func Fetchdetail_event(idevent int) (helpers.Response, error) {
 
 	return res, nil
 }
+func Fetchdetailgroup_event(idevent int) (helpers.Response, error) {
+	var obj entities.Model_eventdetailgroup
+	var arraobj []entities.Model_eventdetailgroup
+	var res helpers.Response
+	msg := "Data Not Found"
+	con := db.CreateCon()
+	ctx := context.Background()
+	start := time.Now()
+
+	sql_select := `SELECT 
+		idmemberagen, SUM(deposit) as totaldeposit,  
+		FROM ` + configs.DB_tbl_trx_event_detail + ` 
+		WHERE idevent=$1 
+		GROUP BY idmemberagen 
+		ORDER BY totaldeposit DESC     
+	`
+
+	row, err := con.QueryContext(ctx, sql_select, idevent)
+	helpers.ErrorCheck(err)
+	for row.Next() {
+		var (
+			idmemberagen_db, totaldeposit_db int
+		)
+
+		err = row.Scan(&idmemberagen_db, &totaldeposit_db)
+
+		helpers.ErrorCheck(err)
+		phone, username := _GetMemberAgen(idmemberagen_db)
+		obj.Eventdetailgroup_username = username
+		obj.Eventdetailgroup_phone = phone
+		obj.Eventdetailgroup_deposit = totaldeposit_db
+		arraobj = append(arraobj, obj)
+		msg = "Success"
+	}
+	defer row.Close()
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = arraobj
+	res.Time = time.Since(start).String()
+
+	return res, nil
+}
 func Savedetail_event(
 	admin, sData string,
 	idevent, idmemberagen, deposit, idrecord int) (helpers.Response, error) {
@@ -210,7 +253,7 @@ func Savedetail_event(
 	render_page := time.Now()
 
 	if sData == "New" {
-		voucher := "23011717011"
+
 		sql_insert := `
 				insert into
 				` + configs.DB_tbl_trx_event_detail + ` (
@@ -225,6 +268,7 @@ func Savedetail_event(
 			`
 		field_column := configs.DB_tbl_trx_event_detail + tglnow.Format("YYYY")
 		idrecord_counter := Get_counter(field_column)
+		voucher := strconv.Itoa(idevent) + "_" + tglnow.Format("MM") + tglnow.Format("DD") + tglnow.Format("HH") + strconv.Itoa(idrecord_counter)
 		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_event_detail, "INSERT",
 			tglnow.Format("YY")+tglnow.Format("MM")+tglnow.Format("DD")+strconv.Itoa(idrecord_counter),
 			idevent, idmemberagen, voucher, deposit,

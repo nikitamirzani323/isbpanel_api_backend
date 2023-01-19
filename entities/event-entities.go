@@ -7,6 +7,7 @@ type Model_event struct {
 	Event_name       string `json:"event_name"`
 	Event_startevent string `json:"event_startevent"`
 	Event_endevent   string `json:"event_endevent"`
+	Event_mindeposit int    `json:"event_mindeposit"`
 	Event_create     string `json:"event_create"`
 	Event_update     string `json:"event_update"`
 }
@@ -32,6 +33,7 @@ type Controller_eventsave struct {
 	Event_name       string `json:"event_name" validate:"required"`
 	Event_startevent string `json:"event_startevent" validate:"required"`
 	Event_endevent   string `json:"event_endevent" validate:"required"`
+	Event_mindeposit int    `json:"event_mindeposit" validate:"required"`
 }
 type Controller_eventdetailsave struct {
 	Sdata                    string `json:"sdata" validate:"required"`

@@ -31,6 +31,7 @@ func Eventhome(c *fiber.Ctx) error {
 		event_name, _ := jsonparser.GetString(value, "event_name")
 		event_startevent, _ := jsonparser.GetString(value, "event_startevent")
 		event_endevent, _ := jsonparser.GetString(value, "event_endevent")
+		event_mindeposit, _ := jsonparser.GetInt(value, "event_mindeposit")
 		event_create, _ := jsonparser.GetString(value, "event_create")
 		event_update, _ := jsonparser.GetString(value, "event_update")
 
@@ -40,6 +41,7 @@ func Eventhome(c *fiber.Ctx) error {
 		obj.Event_name = event_name
 		obj.Event_startevent = event_startevent
 		obj.Event_endevent = event_endevent
+		obj.Event_mindeposit = int(event_mindeposit)
 		obj.Event_create = event_create
 		obj.Event_update = event_update
 		arraobj = append(arraobj, obj)
@@ -183,7 +185,7 @@ func EventSave(c *fiber.Ctx) error {
 	result, err := models.Save_event(
 		client_admin,
 		client.Event_name, client.Event_startevent, client.Event_endevent,
-		client.Sdata, client.Event_idwebagen, client.Event_id)
+		client.Sdata, client.Event_idwebagen, client.Event_mindeposit, client.Event_id)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{

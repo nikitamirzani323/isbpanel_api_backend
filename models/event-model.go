@@ -24,7 +24,7 @@ func Fetch_event() (helpers.Response, error) {
 	start := time.Now()
 
 	sql_select := `SELECT 
-		A.idevent , A.idwebagen, B.nmwebagen, A.nmevent,  
+		A.idevent , A.idwebagen, B.nmwebagen, A.nmevent,  A.mindeposit, 
 		to_char(COALESCE(A.startevent,now()), 'YYYY-MM-DD HH24:MI:SS'), 
 		to_char(COALESCE(A.endevent,now()), 'YYYY-MM-DD HH24:MI:SS'), 
 		createevent, to_char(COALESCE(A.createdateevent,now()), 'YYYY-MM-DD HH24:MI:SS'), 
@@ -38,13 +38,13 @@ func Fetch_event() (helpers.Response, error) {
 	helpers.ErrorCheck(err)
 	for row.Next() {
 		var (
-			idevent_db, idwebagen_db                                               int
+			idevent_db, idwebagen_db, mindeposit_db                                int
 			nmevent_db, nmwebagen_db, startevent_db, endevent_db                   string
 			createevent_db, createdateevent_db, updateevent_db, updatedateevent_db string
 		)
 
 		err = row.Scan(&idevent_db, &idwebagen_db,
-			&nmwebagen_db, &nmevent_db, &startevent_db, &endevent_db,
+			&nmwebagen_db, &nmevent_db, &mindeposit_db, &startevent_db, &endevent_db,
 			&createevent_db, &createdateevent_db, &updateevent_db, &updatedateevent_db)
 
 		helpers.ErrorCheck(err)
@@ -63,6 +63,7 @@ func Fetch_event() (helpers.Response, error) {
 		obj.Event_name = nmevent_db
 		obj.Event_startevent = startevent_db
 		obj.Event_endevent = endevent_db
+		obj.Event_mindeposit = mindeposit_db
 		obj.Event_create = create
 		obj.Event_update = update
 		arraobj = append(arraobj, obj)
@@ -79,7 +80,7 @@ func Fetch_event() (helpers.Response, error) {
 }
 func Save_event(
 	admin, nmevent, startevent, endevent, sData string,
-	idwebagen, idrecord int) (helpers.Response, error) {
+	idwebagen, mindeposit, idrecord int) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"
 	tglnow, _ := goment.New()
@@ -90,7 +91,7 @@ func Save_event(
 				insert into
 				` + configs.DB_tbl_trx_event + ` (
 					idevent , idwebagen, nmevent,  
-					startevent , endevent,  
+					startevent , endevent,  mindeposit, 
 					createevent, createdateevent
 				) values (
 					$1, $2, $3, 
@@ -102,7 +103,7 @@ func Save_event(
 		idrecord_counter := Get_counter(field_column)
 		flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_event, "INSERT",
 			tglnow.Format("YY")+tglnow.Format("MM")+tglnow.Format("DD")+strconv.Itoa(idrecord_counter), idwebagen,
-			nmevent, startevent, endevent,
+			nmevent, startevent, endevent, mindeposit,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 
 		if flag_insert {
@@ -115,13 +116,13 @@ func Save_event(
 				UPDATE 
 				` + configs.DB_tbl_trx_event + `  
 				SET idwebagen =$1, nmevent=$2, 
-				startevent=$3, endevent=$4,
-				updateevent=$5, updatedateevent=$6 
-				WHERE idevent=$7  
+				startevent=$3, endevent=$4, endevent=$5, 
+				updateevent=$6, updatedateevent=$7  
+				WHERE idevent=$8  
 			`
 
 		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_event, "UPDATE",
-			idwebagen, nmevent, startevent, endevent,
+			idwebagen, nmevent, startevent, endevent, mindeposit,
 			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
 
 		if flag_update {

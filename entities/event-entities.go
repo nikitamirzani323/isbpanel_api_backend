@@ -21,14 +21,16 @@ type Model_eventdetail struct {
 	Eventdetail_update   string `json:"eventdetail_update"`
 }
 type Model_eventdetailgroup struct {
+	Eventdetailgroup_idmember int    `json:"eventdetailgroup_idmember"`
 	Eventdetailgroup_deposit  int    `json:"eventdetailgroup_deposit"`
 	Eventdetailgroup_phone    string `json:"eventdetailgroup_phone"`
 	Eventdetailgroup_username string `json:"eventdetailgroup_username"`
 }
 type Controller_eventdetail struct {
-	Sdata    string `json:"sdata" validate:"required"`
-	Page     string `json:"page" validate:"required"`
-	Event_id int    `json:"event_id"`
+	Sdata              string `json:"sdata" validate:"required"`
+	Page               string `json:"page" validate:"required"`
+	Event_id           int    `json:"event_id"`
+	Event_idmemberagen int    `json:"event_idmemberagen"`
 }
 type Controller_eventsave struct {
 	Sdata            string `json:"sdata" validate:"required"`

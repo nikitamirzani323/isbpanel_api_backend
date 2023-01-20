@@ -139,7 +139,7 @@ func Save_event(
 
 	return res, nil
 }
-func Fetchdetail_event(idevent int) (helpers.Response, error) {
+func Fetchdetail_event(idevent, idmemberagen int) (helpers.Response, error) {
 	var obj entities.Model_eventdetail
 	var arraobj []entities.Model_eventdetail
 	var res helpers.Response
@@ -148,16 +148,21 @@ func Fetchdetail_event(idevent int) (helpers.Response, error) {
 	ctx := context.Background()
 	start := time.Now()
 
-	sql_select := `SELECT 
-		A.ideventdetail , A.voucher, A.deposit,  
-		B.phonemember , B.usernameagen, 
-		createeventdetail, to_char(COALESCE(A.createdateeventdetail,now()), 'YYYY-MM-DD HH24:MI:SS'), 
-		updateeventdetail, to_char(COALESCE(A.updatedateeventdetail,now()), 'YYYY-MM-DD HH24:MI:SS') 
-		FROM ` + configs.DB_tbl_trx_event_detail + ` as A 
-		JOIN ` + configs.DB_tbl_trx_memberagen + ` as B ON B.idmemberagen = A.idmemberagen    
-		WHERE A.idevent=$1 
-		ORDER BY A.createdateeventdetail DESC     
-	`
+	sql_select := ""
+	sql_select += ""
+	sql_select += "SELECT "
+	sql_select += "A.ideventdetail , A.voucher, A.deposit, "
+	sql_select += "B.phonemember , B.usernameagen, "
+	sql_select += "createeventdetail, to_char(COALESCE(A.createdateeventdetail,now()), 'YYYY-MM-DD HH24:MI:SS'),  "
+	sql_select += "updateeventdetail, to_char(COALESCE(A.updatedateeventdetail,now()), 'YYYY-MM-DD HH24:MI:SS')   "
+	sql_select += "FROM " + configs.DB_tbl_trx_event_detail + "  as A "
+	sql_select += "JOIN " + configs.DB_tbl_trx_memberagen + "  as B ON B.idmemberagen = A.idmemberagen "
+	sql_select += "WHERE A.idevent=$1 "
+	if idmemberagen > 0 {
+		sql_select += "AND A.idmemberagen='" + strconv.Itoa(idmemberagen) + "' "
+	}
+	sql_select += "ORDER BY A.createdateeventdetail DESC "
+	log.Println(sql_select)
 
 	row, err := con.QueryContext(ctx, sql_select, idevent)
 	helpers.ErrorCheck(err)
@@ -211,7 +216,7 @@ func Fetchdetailgroup_event(idevent int) (helpers.Response, error) {
 	start := time.Now()
 
 	sql_select := `SELECT 
-		idmemberagen, SUM(deposit) as totaldeposit,  
+		idmemberagen, SUM(deposit) as totaldeposit   
 		FROM ` + configs.DB_tbl_trx_event_detail + ` 
 		WHERE idevent=$1 
 		GROUP BY idmemberagen 
@@ -229,6 +234,7 @@ func Fetchdetailgroup_event(idevent int) (helpers.Response, error) {
 
 		helpers.ErrorCheck(err)
 		phone, username := _GetMemberAgen(idmemberagen_db)
+		obj.Eventdetailgroup_idmember = idmemberagen_db
 		obj.Eventdetailgroup_username = username
 		obj.Eventdetailgroup_phone = phone
 		obj.Eventdetailgroup_deposit = totaldeposit_db

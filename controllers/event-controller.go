@@ -102,7 +102,7 @@ func Eventdetailhome(c *fiber.Ctx) error {
 	var obj entities.Model_eventdetail
 	var arraobj []entities.Model_eventdetail
 	render_page := time.Now()
-	resultredis, flag := helpers.GetRedis(Fieldeventdetail_home_redis + "_" + strconv.Itoa(client.Event_id))
+	resultredis, flag := helpers.GetRedis(Fieldeventdetail_home_redis + "_" + strconv.Itoa(client.Event_id) + "_" + strconv.Itoa(client.Event_idmemberagen))
 	jsonredis := []byte(resultredis)
 	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
 	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
@@ -125,7 +125,7 @@ func Eventdetailhome(c *fiber.Ctx) error {
 	})
 
 	if !flag {
-		result, err := models.Fetchdetail_event(client.Event_id)
+		result, err := models.Fetchdetail_event(client.Event_id, client.Event_idmemberagen)
 		if err != nil {
 			c.Status(fiber.StatusBadRequest)
 			return c.JSON(fiber.Map{
@@ -134,7 +134,7 @@ func Eventdetailhome(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Fieldeventdetail_home_redis+"_"+strconv.Itoa(client.Event_id), result, 60*time.Minute)
+		helpers.SetRedis(Fieldeventdetail_home_redis+"_"+strconv.Itoa(client.Event_id)+"_"+strconv.Itoa(client.Event_idmemberagen), result, 60*time.Minute)
 		log.Println("EVENT DETAIL  MYSQL")
 		return c.JSON(result)
 	} else {
@@ -182,10 +182,12 @@ func Eventgroupdetailhome(c *fiber.Ctx) error {
 	jsonredis := []byte(resultredis)
 	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
 	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		eventdetailgroup_idmember, _ := jsonparser.GetInt(value, "eventdetailgroup_idmember")
 		eventdetailgroup_deposit, _ := jsonparser.GetInt(value, "eventdetailgroup_deposit")
 		eventdetailgroup_phone, _ := jsonparser.GetString(value, "eventdetailgroup_phone")
 		eventdetailgroup_username, _ := jsonparser.GetString(value, "eventdetailgroup_username")
 
+		obj.Eventdetailgroup_idmember = int(eventdetailgroup_idmember)
 		obj.Eventdetailgroup_deposit = int(eventdetailgroup_deposit)
 		obj.Eventdetailgroup_username = eventdetailgroup_username
 		obj.Eventdetailgroup_phone = eventdetailgroup_phone
@@ -193,7 +195,7 @@ func Eventgroupdetailhome(c *fiber.Ctx) error {
 	})
 
 	if !flag {
-		result, err := models.Fetchdetail_event(client.Event_id)
+		result, err := models.Fetchdetailgroup_event(client.Event_id)
 		if err != nil {
 			c.Status(fiber.StatusBadRequest)
 			return c.JSON(fiber.Map{
@@ -264,7 +266,7 @@ func EventSave(c *fiber.Ctx) error {
 		})
 	}
 
-	_deleteredis_event(0)
+	_deleteredis_event(0, 0)
 	return c.JSON(result)
 }
 func EventDetailSave(c *fiber.Ctx) error {
@@ -316,14 +318,14 @@ func EventDetailSave(c *fiber.Ctx) error {
 		})
 	}
 
-	_deleteredis_event(client.Eventdetail_idevent)
+	_deleteredis_event(client.Eventdetail_idevent, client.Eventdetail_idmemberagen)
 	return c.JSON(result)
 }
-func _deleteredis_event(idevent int) {
+func _deleteredis_event(idevent, idmemberagen int) {
 	val_master := helpers.DeleteRedis(Fieldevent_home_redis)
 	log.Printf("Redis Delete BACKEND EVENT : %d", val_master)
 
-	val_detail := helpers.DeleteRedis(Fieldeventdetail_home_redis + "_" + strconv.Itoa(idevent))
+	val_detail := helpers.DeleteRedis(Fieldeventdetail_home_redis + "_" + strconv.Itoa(idevent) + "_" + strconv.Itoa(idmemberagen))
 	log.Printf("Redis Delete BACKEND EVENT DELETE : %d", val_detail)
 
 	val_groupdetail := helpers.DeleteRedis(Fieldeventdetailgroup_home_redis + "_" + strconv.Itoa(idevent))

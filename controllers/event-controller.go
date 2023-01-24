@@ -33,6 +33,8 @@ func Eventhome(c *fiber.Ctx) error {
 		event_startevent, _ := jsonparser.GetString(value, "event_startevent")
 		event_endevent, _ := jsonparser.GetString(value, "event_endevent")
 		event_mindeposit, _ := jsonparser.GetInt(value, "event_mindeposit")
+		event_money_in, _ := jsonparser.GetInt(value, "event_money_in")
+		event_money_out, _ := jsonparser.GetInt(value, "event_money_out")
 		event_create, _ := jsonparser.GetString(value, "event_create")
 		event_update, _ := jsonparser.GetString(value, "event_update")
 
@@ -43,6 +45,8 @@ func Eventhome(c *fiber.Ctx) error {
 		obj.Event_startevent = event_startevent
 		obj.Event_endevent = event_endevent
 		obj.Event_mindeposit = int(event_mindeposit)
+		obj.Event_money_in = int(event_money_in)
+		obj.Event_money_out = int(event_money_out)
 		obj.Event_create = event_create
 		obj.Event_update = event_update
 		arraobj = append(arraobj, obj)
@@ -184,11 +188,13 @@ func Eventgroupdetailhome(c *fiber.Ctx) error {
 	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
 		eventdetailgroup_idmember, _ := jsonparser.GetInt(value, "eventdetailgroup_idmember")
 		eventdetailgroup_deposit, _ := jsonparser.GetInt(value, "eventdetailgroup_deposit")
+		eventdetailgroup_voucher, _ := jsonparser.GetInt(value, "eventdetailgroup_voucher")
 		eventdetailgroup_phone, _ := jsonparser.GetString(value, "eventdetailgroup_phone")
 		eventdetailgroup_username, _ := jsonparser.GetString(value, "eventdetailgroup_username")
 
 		obj.Eventdetailgroup_idmember = int(eventdetailgroup_idmember)
 		obj.Eventdetailgroup_deposit = int(eventdetailgroup_deposit)
+		obj.Eventdetailgroup_voucher = int(eventdetailgroup_voucher)
 		obj.Eventdetailgroup_username = eventdetailgroup_username
 		obj.Eventdetailgroup_phone = eventdetailgroup_phone
 		arraobj = append(arraobj, obj)
@@ -303,12 +309,10 @@ func EventDetailSave(c *fiber.Ctx) error {
 	temp_decp := helpers.Decryption(name)
 	client_admin, _ := helpers.Parsing_Decry(temp_decp, "==")
 
-	// admin, sData string,
-	// idevent, idmemberagen, deposit, idrecord int
 	result, err := models.Savedetail_event(
 		client_admin,
 		client.Sdata, client.Eventdetail_idevent, client.Eventdetail_idmemberagen,
-		client.Eventdetail_deposit, client.Eventdetail_id)
+		client.Eventdetail_qty, client.Eventdetail_id)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
@@ -319,6 +323,7 @@ func EventDetailSave(c *fiber.Ctx) error {
 	}
 
 	_deleteredis_event(client.Eventdetail_idevent, client.Eventdetail_idmemberagen)
+	_deleteredis_event(client.Eventdetail_idevent, 0)
 	return c.JSON(result)
 }
 func _deleteredis_event(idevent, idmemberagen int) {

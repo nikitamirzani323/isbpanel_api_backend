@@ -8,6 +8,8 @@ type Model_event struct {
 	Event_startevent string `json:"event_startevent"`
 	Event_endevent   string `json:"event_endevent"`
 	Event_mindeposit int    `json:"event_mindeposit"`
+	Event_money_in   int    `json:"event_money_in"`
+	Event_money_out  int    `json:"event_money_out"`
 	Event_create     string `json:"event_create"`
 	Event_update     string `json:"event_update"`
 }
@@ -23,6 +25,7 @@ type Model_eventdetail struct {
 type Model_eventdetailgroup struct {
 	Eventdetailgroup_idmember int    `json:"eventdetailgroup_idmember"`
 	Eventdetailgroup_deposit  int    `json:"eventdetailgroup_deposit"`
+	Eventdetailgroup_voucher  int    `json:"eventdetailgroup_voucher"`
 	Eventdetailgroup_phone    string `json:"eventdetailgroup_phone"`
 	Eventdetailgroup_username string `json:"eventdetailgroup_username"`
 }
@@ -48,5 +51,5 @@ type Controller_eventdetailsave struct {
 	Eventdetail_id           int    `json:"eventdetail_id"`
 	Eventdetail_idevent      int    `json:"eventdetail_idevent"`
 	Eventdetail_idmemberagen int    `json:"eventdetail_idmemberagen" validate:"required"`
-	Eventdetail_deposit      int    `json:"eventdetail_deposit" validate:"required"`
+	Eventdetail_qty          int    `json:"eventdetail_qty" validate:"required"`
 }

@@ -112,6 +112,7 @@ func Eventdetailhome(c *fiber.Ctx) error {
 	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
 		eventdetail_id, _ := jsonparser.GetInt(value, "eventdetail_id")
 		eventdetail_deposit, _ := jsonparser.GetInt(value, "eventdetail_deposit")
+		eventdetail_status, _ := jsonparser.GetString(value, "eventdetail_status")
 		eventdetail_voucher, _ := jsonparser.GetString(value, "eventdetail_voucher")
 		eventdetail_phone, _ := jsonparser.GetString(value, "eventdetail_phone")
 		eventdetail_username, _ := jsonparser.GetString(value, "eventdetail_username")
@@ -121,6 +122,7 @@ func Eventdetailhome(c *fiber.Ctx) error {
 		obj.Eventdetail_iddetail = int(eventdetail_id)
 		obj.Eventdetail_deposit = int(eventdetail_deposit)
 		obj.Eventdetail_voucher = eventdetail_voucher
+		obj.Eventdetail_status = eventdetail_status
 		obj.Eventdetail_phone = eventdetail_phone
 		obj.Eventdetail_username = eventdetail_username
 		obj.Eventdetail_create = eventdetail_create
@@ -323,6 +325,55 @@ func EventDetailSave(c *fiber.Ctx) error {
 	}
 
 	_deleteredis_event(client.Eventdetail_idevent, client.Eventdetail_idmemberagen)
+	_deleteredis_event(client.Eventdetail_idevent, 0)
+	return c.JSON(result)
+}
+func EventDetailStatusUpdate(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_eventdetailstatusupdate)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+	user := c.Locals("jwt").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	temp_decp := helpers.Decryption(name)
+	client_admin, _ := helpers.Parsing_Decry(temp_decp, "==")
+
+	result, err := models.Updatedetailstatus_event(
+		client_admin, client.Eventdetail_status,
+		client.Sdata, client.Eventdetail_idevent, client.Eventdetail_id)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
 	_deleteredis_event(client.Eventdetail_idevent, 0)
 	return c.JSON(result)
 }

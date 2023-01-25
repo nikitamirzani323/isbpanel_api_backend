@@ -157,7 +157,7 @@ func Fetchdetail_event(idevent, idmemberagen int) (helpers.Response, error) {
 	sql_select := ""
 	sql_select += ""
 	sql_select += "SELECT "
-	sql_select += "A.ideventdetail , A.voucher, A.deposit, "
+	sql_select += "A.ideventdetail , A.voucher, A.deposit, A.statuseventdetail, "
 	sql_select += "B.phonemember , B.usernameagen, "
 	sql_select += "createeventdetail, to_char(COALESCE(A.createdateeventdetail,now()), 'YYYY-MM-DD HH24:MI:SS'),  "
 	sql_select += "updateeventdetail, to_char(COALESCE(A.updatedateeventdetail,now()), 'YYYY-MM-DD HH24:MI:SS')   "
@@ -175,12 +175,12 @@ func Fetchdetail_event(idevent, idmemberagen int) (helpers.Response, error) {
 	for row.Next() {
 		var (
 			ideventdetail_db, deposit_db                                                                   int
-			voucher_db, phonemember_db, usernameagen_db                                                    string
+			voucher_db, phonemember_db, usernameagen_db, statuseventdetail_db                              string
 			createeventdetail_db, createdateeventdetail_db, updateeventdetail_db, updatedateeventdetail_db string
 		)
 
 		err = row.Scan(&ideventdetail_db, &voucher_db,
-			&deposit_db, &phonemember_db, &usernameagen_db,
+			&deposit_db, &statuseventdetail_db, &phonemember_db, &usernameagen_db,
 			&createeventdetail_db, &createdateeventdetail_db, &updateeventdetail_db, &updatedateeventdetail_db)
 
 		helpers.ErrorCheck(err)
@@ -198,6 +198,7 @@ func Fetchdetail_event(idevent, idmemberagen int) (helpers.Response, error) {
 		obj.Eventdetail_username = usernameagen_db
 		obj.Eventdetail_voucher = voucher_db
 		obj.Eventdetail_deposit = deposit_db
+		obj.Eventdetail_status = statuseventdetail_db
 		obj.Eventdetail_create = create
 		obj.Eventdetail_update = update
 		arraobj = append(arraobj, obj)
@@ -296,6 +297,45 @@ func Savedetail_event(
 			}
 		}
 		_updateEvent(admin, idevent)
+	}
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
+
+	return res, nil
+}
+func Updatedetailstatus_event(
+	admin, status, sData string,
+	idevent, idrecord int) (helpers.Response, error) {
+	var res helpers.Response
+	msg := "Failed"
+	tglnow, _ := goment.New()
+	render_page := time.Now()
+	flag := false
+
+	flag = CheckDBTwoField(configs.DB_tbl_trx_event_detail, "ideventdetail", strconv.Itoa(idrecord), "statuseventdetail", "")
+
+	if flag {
+		sql_update := `
+				UPDATE 
+				` + configs.DB_tbl_trx_event_detail + `  
+				SET statuseventdetail =$1, 
+				updateeventdetail=$2, updatedateeventdetail=$3  
+				WHERE ideventdetail=$4  
+				AND idevent=$5
+			`
+
+		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_event_detail, "UPDATE",
+			status,
+			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord, idevent)
+
+		if !flag_update {
+			log.Println(msg_update)
+		} else {
+			msg = "Succes"
+		}
 	}
 
 	res.Status = fiber.StatusOK

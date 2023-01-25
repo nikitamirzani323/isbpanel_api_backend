@@ -16,6 +16,7 @@ type Model_event struct {
 type Model_eventdetail struct {
 	Eventdetail_iddetail int    `json:"eventdetail_id"`
 	Eventdetail_voucher  string `json:"eventdetail_voucher"`
+	Eventdetail_status   string `json:"eventdetail_status"`
 	Eventdetail_deposit  int    `json:"eventdetail_deposit"`
 	Eventdetail_phone    string `json:"eventdetail_phone"`
 	Eventdetail_username string `json:"eventdetail_username"`
@@ -52,4 +53,11 @@ type Controller_eventdetailsave struct {
 	Eventdetail_idevent      int    `json:"eventdetail_idevent"`
 	Eventdetail_idmemberagen int    `json:"eventdetail_idmemberagen" validate:"required"`
 	Eventdetail_qty          int    `json:"eventdetail_qty" validate:"required"`
+}
+type Controller_eventdetailstatusupdate struct {
+	Sdata               string `json:"sdata" validate:"required"`
+	Page                string `json:"page" validate:"required"`
+	Eventdetail_id      int    `json:"eventdetail_id"`
+	Eventdetail_idevent int    `json:"eventdetail_idevent"`
+	Eventdetail_status  string `json:"eventdetail_status" validate:"required"`
 }

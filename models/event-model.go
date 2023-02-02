@@ -284,7 +284,7 @@ func Savedetail_event(
 			`
 			field_column := configs.DB_tbl_trx_event_detail + tglnow.Format("YYYY")
 			idrecord_counter := Get_counter(field_column)
-			voucher := strconv.Itoa(idevent) + "_" + tglnow.Format("MM") + tglnow.Format("DD") + tglnow.Format("HH") + strconv.Itoa(idrecord_counter)
+			voucher := strconv.Itoa(idevent) + tglnow.Format("MM") + tglnow.Format("DD") + tglnow.Format("HH") + strconv.Itoa(idrecord_counter)
 			flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_trx_event_detail, "INSERT",
 				tglnow.Format("YY")+tglnow.Format("MM")+tglnow.Format("DD")+strconv.Itoa(idrecord_counter),
 				idevent, idmemberagen, voucher, mindeposit,

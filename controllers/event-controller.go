@@ -219,7 +219,7 @@ func Eventdetailwinner(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Fieldeventdetail_home_redis+"_"+strconv.Itoa(client.Event_id), result, 60*time.Minute)
+		helpers.SetRedis(Fieldeventwinner_home_redis+"_"+strconv.Itoa(client.Event_id), result, 60*time.Minute)
 		log.Println("EVENT DETAIL WINNER  MYSQL")
 		return c.JSON(result)
 	} else {

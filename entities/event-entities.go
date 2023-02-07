@@ -36,6 +36,11 @@ type Controller_eventdetail struct {
 	Event_id           int    `json:"event_id"`
 	Event_idmemberagen int    `json:"event_idmemberagen"`
 }
+type Controller_eventdetailwinner struct {
+	Sdata    string `json:"sdata" validate:"required"`
+	Page     string `json:"page" validate:"required"`
+	Event_id int    `json:"event_id"`
+}
 type Controller_eventsave struct {
 	Sdata            string `json:"sdata" validate:"required"`
 	Page             string `json:"page" validate:"required"`

@@ -16,6 +16,7 @@ import (
 
 const Fieldevent_home_redis = "LISTEVENT_BACKEND_ISBPANEL"
 const Fieldeventdetail_home_redis = "LISTEVENTDETAIL_BACKEND_ISBPANEL"
+const Fieldeventwinner_home_redis = "LISTEVENTWINNER_BACKEND_ISBPANEL"
 const Fieldeventdetailgroup_home_redis = "LISTEVENTDETAILGROUP_BACKEND_ISBPANEL"
 
 func Eventhome(c *fiber.Ctx) error {
@@ -145,6 +146,84 @@ func Eventdetailhome(c *fiber.Ctx) error {
 		return c.JSON(result)
 	} else {
 		log.Println("EVENT DETAIL CACHE")
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusOK,
+			"message": "Success",
+			"record":  arraobj,
+			"time":    time.Since(render_page).String(),
+		})
+	}
+}
+func Eventdetailwinner(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_eventdetailwinner)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
+	var obj entities.Model_eventdetail
+	var arraobj []entities.Model_eventdetail
+	render_page := time.Now()
+	resultredis, flag := helpers.GetRedis(Fieldeventwinner_home_redis + "_" + strconv.Itoa(client.Event_id))
+	jsonredis := []byte(resultredis)
+	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
+	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		eventdetail_id, _ := jsonparser.GetInt(value, "eventdetail_id")
+		eventdetail_deposit, _ := jsonparser.GetInt(value, "eventdetail_deposit")
+		eventdetail_status, _ := jsonparser.GetString(value, "eventdetail_status")
+		eventdetail_voucher, _ := jsonparser.GetString(value, "eventdetail_voucher")
+		eventdetail_phone, _ := jsonparser.GetString(value, "eventdetail_phone")
+		eventdetail_username, _ := jsonparser.GetString(value, "eventdetail_username")
+		eventdetail_create, _ := jsonparser.GetString(value, "eventdetail_create")
+		eventdetail_update, _ := jsonparser.GetString(value, "eventdetail_update")
+
+		obj.Eventdetail_iddetail = int(eventdetail_id)
+		obj.Eventdetail_deposit = int(eventdetail_deposit)
+		obj.Eventdetail_voucher = eventdetail_voucher
+		obj.Eventdetail_status = eventdetail_status
+		obj.Eventdetail_phone = eventdetail_phone
+		obj.Eventdetail_username = eventdetail_username
+		obj.Eventdetail_create = eventdetail_create
+		obj.Eventdetail_update = eventdetail_update
+		arraobj = append(arraobj, obj)
+	})
+
+	if !flag {
+		result, err := models.Fetchdetailwinner_event(client.Event_id)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"status":  fiber.StatusBadRequest,
+				"message": err.Error(),
+				"record":  nil,
+			})
+		}
+		helpers.SetRedis(Fieldeventdetail_home_redis+"_"+strconv.Itoa(client.Event_id), result, 60*time.Minute)
+		log.Println("EVENT DETAIL WINNER  MYSQL")
+		return c.JSON(result)
+	} else {
+		log.Println("EVENT DETAIL WINNER CACHE")
 		return c.JSON(fiber.Map{
 			"status":  fiber.StatusOK,
 			"message": "Success",
@@ -383,6 +462,9 @@ func _deleteredis_event(idevent, idmemberagen int) {
 
 	val_detail := helpers.DeleteRedis(Fieldeventdetail_home_redis + "_" + strconv.Itoa(idevent) + "_" + strconv.Itoa(idmemberagen))
 	log.Printf("Redis Delete BACKEND EVENT DELETE : %d", val_detail)
+
+	val_winner := helpers.DeleteRedis(Fieldeventwinner_home_redis + "_" + strconv.Itoa(idevent))
+	log.Printf("Redis Delete BACKEND EVENT WINNER DELETE : %d", val_winner)
 
 	val_groupdetail := helpers.DeleteRedis(Fieldeventdetailgroup_home_redis + "_" + strconv.Itoa(idevent))
 	log.Printf("Redis Delete BACKEND EVENT GROUP DELETE : %d", val_groupdetail)

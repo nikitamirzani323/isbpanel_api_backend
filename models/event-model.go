@@ -213,6 +213,71 @@ func Fetchdetail_event(idevent, idmemberagen int) (helpers.Response, error) {
 
 	return res, nil
 }
+func Fetchdetailwinner_event(idevent int) (helpers.Response, error) {
+	var obj entities.Model_eventdetail
+	var arraobj []entities.Model_eventdetail
+	var res helpers.Response
+	msg := "Data Not Found"
+	con := db.CreateCon()
+	ctx := context.Background()
+	start := time.Now()
+
+	sql_select := ""
+	sql_select += ""
+	sql_select += "SELECT "
+	sql_select += "A.ideventdetail , A.voucher, A.deposit, A.statuseventdetail, "
+	sql_select += "B.phonemember , B.usernameagen, "
+	sql_select += "createeventdetail, to_char(COALESCE(A.createdateeventdetail,now()), 'YYYY-MM-DD HH24:MI:SS'),  "
+	sql_select += "updateeventdetail, to_char(COALESCE(A.updatedateeventdetail,now()), 'YYYY-MM-DD HH24:MI:SS')   "
+	sql_select += "FROM " + configs.DB_tbl_trx_event_detail + "  as A "
+	sql_select += "JOIN " + configs.DB_tbl_trx_memberagen + "  as B ON B.idmemberagen = A.idmemberagen "
+	sql_select += "WHERE A.idevent=$1 "
+	sql_select += "AND A.statuseventdetail!='' "
+	sql_select += "ORDER BY A.createdateeventdetail DESC "
+
+	row, err := con.QueryContext(ctx, sql_select, idevent)
+	helpers.ErrorCheck(err)
+	for row.Next() {
+		var (
+			ideventdetail_db, deposit_db                                                                   int
+			voucher_db, phonemember_db, usernameagen_db, statuseventdetail_db                              string
+			createeventdetail_db, createdateeventdetail_db, updateeventdetail_db, updatedateeventdetail_db string
+		)
+
+		err = row.Scan(&ideventdetail_db, &voucher_db,
+			&deposit_db, &statuseventdetail_db, &phonemember_db, &usernameagen_db,
+			&createeventdetail_db, &createdateeventdetail_db, &updateeventdetail_db, &updatedateeventdetail_db)
+
+		helpers.ErrorCheck(err)
+		create := ""
+		update := ""
+		if createeventdetail_db != "" {
+			create = createeventdetail_db + ", " + createdateeventdetail_db
+		}
+		if updateeventdetail_db != "" {
+			update = updateeventdetail_db + ", " + updatedateeventdetail_db
+		}
+
+		obj.Eventdetail_iddetail = ideventdetail_db
+		obj.Eventdetail_phone = phonemember_db
+		obj.Eventdetail_username = usernameagen_db
+		obj.Eventdetail_voucher = voucher_db
+		obj.Eventdetail_deposit = deposit_db
+		obj.Eventdetail_status = statuseventdetail_db
+		obj.Eventdetail_create = create
+		obj.Eventdetail_update = update
+		arraobj = append(arraobj, obj)
+		msg = "Success"
+	}
+	defer row.Close()
+
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = arraobj
+	res.Time = time.Since(start).String()
+
+	return res, nil
+}
 func Fetchdetailgroup_event(idevent int) (helpers.Response, error) {
 	var obj entities.Model_eventdetailgroup
 	var arraobj []entities.Model_eventdetailgroup

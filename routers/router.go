@@ -145,6 +145,7 @@ func Init() *fiber.App {
 
 	app.Post("/api/event", middleware.JWTProtected(), controllers.Eventhome)
 	app.Post("/api/eventdetail", middleware.JWTProtected(), controllers.Eventdetailhome)
+	app.Post("/api/eventwinner", middleware.JWTProtected(), controllers.Eventdetailwinner)
 	app.Post("/api/eventgroupdetail", middleware.JWTProtected(), controllers.Eventgroupdetailhome)
 	app.Post("/api/eventsave", middleware.JWTProtected(), controllers.EventSave)
 	app.Post("/api/eventdetailsave", middleware.JWTProtected(), controllers.EventDetailSave)

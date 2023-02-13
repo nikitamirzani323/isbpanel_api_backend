@@ -36,6 +36,7 @@ func Eventhome(c *fiber.Ctx) error {
 		event_mindeposit, _ := jsonparser.GetInt(value, "event_mindeposit")
 		event_money_in, _ := jsonparser.GetInt(value, "event_money_in")
 		event_money_out, _ := jsonparser.GetInt(value, "event_money_out")
+		event_status, _ := jsonparser.GetString(value, "event_status")
 		event_create, _ := jsonparser.GetString(value, "event_create")
 		event_update, _ := jsonparser.GetString(value, "event_update")
 
@@ -48,6 +49,7 @@ func Eventhome(c *fiber.Ctx) error {
 		obj.Event_mindeposit = int(event_mindeposit)
 		obj.Event_money_in = int(event_money_in)
 		obj.Event_money_out = int(event_money_out)
+		obj.Event_status = event_status
 		obj.Event_create = event_create
 		obj.Event_update = event_update
 		arraobj = append(arraobj, obj)

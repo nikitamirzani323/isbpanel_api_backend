@@ -10,6 +10,7 @@ type Model_event struct {
 	Event_mindeposit int    `json:"event_mindeposit"`
 	Event_money_in   int    `json:"event_money_in"`
 	Event_money_out  int    `json:"event_money_out"`
+	Event_status     string `json:"event_status"`
 	Event_create     string `json:"event_create"`
 	Event_update     string `json:"event_update"`
 }

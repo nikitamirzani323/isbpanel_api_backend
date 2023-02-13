@@ -22,7 +22,9 @@ func Fetch_event() (helpers.Response, error) {
 	msg := "Data Not Found"
 	con := db.CreateCon()
 	ctx := context.Background()
+	tglnow, _ := goment.New()
 	start := time.Now()
+	statusevent := "OFFLINE"
 
 	sql_select := `SELECT 
 		A.idevent , A.idwebagen, B.nmwebagen, A.nmevent,  A.mindeposit, A.money_in, A.money_out, 
@@ -32,7 +34,7 @@ func Fetch_event() (helpers.Response, error) {
 		updateevent, to_char(COALESCE(A.updatedateevent,now()), 'YYYY-MM-DD HH24:MI:SS') 
 		FROM ` + configs.DB_tbl_trx_event + ` as A 
 		JOIN ` + configs.DB_tbl_mst_websiteagen + ` as B ON B.idwebagen = A.idwebagen   
-		ORDER BY createdateevent DESC     
+		ORDER BY createdateevent DESC  LIMIT 250    
 	`
 
 	row, err := con.QueryContext(ctx, sql_select)
@@ -58,7 +60,15 @@ func Fetch_event() (helpers.Response, error) {
 		if updateevent_db != "" {
 			update = updateevent_db + ", " + updatedateevent_db
 		}
+		jamtutup_db, _ := goment.New(endevent_db)
+		jamtutup := jamtutup_db.Format("YYYY-MM-DD HH:mm:ss")
+		jamskrg := tglnow.Format("YYYY-MM-DD HH:mm:ss")
 
+		if jamskrg >= jamtutup {
+			statusevent = "OFFLINE"
+		} else {
+			statusevent = "ONLINE"
+		}
 		obj.Event_id = idevent_db
 		obj.Event_idwebagen = idwebagen_db
 		obj.Event_nmwebagen = nmwebagen_db
@@ -68,6 +78,7 @@ func Fetch_event() (helpers.Response, error) {
 		obj.Event_mindeposit = mindeposit_db
 		obj.Event_money_in = int(money_in_db)
 		obj.Event_money_out = int(money_out_db)
+		obj.Event_status = statusevent
 		obj.Event_create = create
 		obj.Event_update = update
 		arraobj = append(arraobj, obj)
@@ -118,24 +129,48 @@ func Save_event(
 			log.Println(msg_insert)
 		}
 	} else {
-		sql_update := `
+		totaldeposit := _TotalDetail(idrecord)
+		log.Println(totaldeposit)
+		if totaldeposit > 0 {
+			sql_update := `
 				UPDATE 
 				` + configs.DB_tbl_trx_event + `  
 				SET idwebagen =$1, nmevent=$2, 
-				startevent=$3, endevent=$4, endevent=$5, 
-				updateevent=$6, updatedateevent=$7  
-				WHERE idevent=$8  
+				startevent=$3, endevent=$4,  
+				updateevent=$5, updatedateevent=$6  
+				WHERE idevent=$7  
 			`
 
-		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_event, "UPDATE",
-			idwebagen, nmevent, startevent, endevent, mindeposit,
-			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
+			flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_event, "UPDATE",
+				idwebagen, nmevent, startevent, endevent,
+				admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
 
-		if flag_update {
-			msg = "Succes"
+			if flag_update {
+				msg = "Succes"
+			} else {
+				log.Println(msg_update)
+			}
 		} else {
-			log.Println(msg_update)
+			sql_update := `
+				UPDATE 
+				` + configs.DB_tbl_trx_event + `  
+				SET idwebagen =$1, nmevent=$2, 
+				startevent=$3, endevent=$4, mindeposit=$5, 
+				updateevent=$6, updatedateevent=$7    
+				WHERE idevent=$8    
+			`
+
+			flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_trx_event, "UPDATE",
+				idwebagen, nmevent, startevent, endevent, mindeposit,
+				admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
+
+			if flag_update {
+				msg = "Succes"
+			} else {
+				log.Println(msg_update)
+			}
 		}
+
 	}
 
 	res.Status = fiber.StatusOK
@@ -475,4 +510,28 @@ func _GetEvent(idevent int) int {
 		helpers.ErrorCheck(e)
 	}
 	return mindeposit_db
+}
+func _TotalDetail(idevent int) int {
+	con := db.CreateCon()
+	ctx := context.Background()
+
+	var (
+		mindeposit_db float64
+	)
+
+	sql_select := ""
+	sql_select += "SELECT "
+	sql_select += "coalesce(sum(deposit),0) as TOTAL "
+	sql_select += "FROM " + configs.DB_tbl_trx_event_detail + " "
+	sql_select += "WHERE idevent = $1 "
+
+	log.Println(sql_select)
+	row := con.QueryRowContext(ctx, sql_select, idevent)
+	switch e := row.Scan(&mindeposit_db); e {
+	case sql.ErrNoRows:
+	case nil:
+	default:
+		helpers.ErrorCheck(e)
+	}
+	return int(mindeposit_db)
 }

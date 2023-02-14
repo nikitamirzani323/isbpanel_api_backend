@@ -359,6 +359,11 @@ func Fetchdetailgroup_event(idevent int) (helpers.Response, error) {
 
 	return res, nil
 }
+
+type Model_eventvoucher struct {
+	Event_voucher string `json:"event_voucher"`
+}
+
 func Savedetail_event(
 	admin, sData string,
 	idevent, idmemberagen, qty, idrecord int) (helpers.Response, error) {
@@ -366,9 +371,11 @@ func Savedetail_event(
 	msg := "Failed"
 	tglnow, _ := goment.New()
 	render_page := time.Now()
-
+	var obj Model_eventvoucher
+	var arraobj []Model_eventvoucher
 	if sData == "New" {
 		mindeposit := _GetEvent(idevent)
+
 		for i := 0; i < qty; i++ {
 			sql_insert := `
 				insert into
@@ -391,6 +398,8 @@ func Savedetail_event(
 				admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 
 			if flag_insert {
+				obj.Event_voucher = voucher
+				arraobj = append(arraobj, obj)
 				msg = "Succes"
 			} else {
 				log.Println(msg_insert)
@@ -401,7 +410,7 @@ func Savedetail_event(
 
 	res.Status = fiber.StatusOK
 	res.Message = msg
-	res.Record = nil
+	res.Record = arraobj
 	res.Time = time.Since(render_page).String()
 
 	return res, nil

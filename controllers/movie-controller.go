@@ -60,10 +60,10 @@ func Moviehome(c *fiber.Ctx) error {
 			"record":  errors,
 		})
 	}
-	log.Println(client.Movie_page)
+	fmt.Println(client.Movie_page)
 	if client.Movie_search != "" {
 		val_movie := helpers.DeleteRedis(Fieldmovie_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_" + client.Movie_search)
-		log.Printf("Redis Delete BACKEND MOVIE : %d", val_movie)
+		fmt.Printf("Redis Delete BACKEND MOVIE : %d", val_movie)
 	}
 	var obj entities.Model_movie
 	var arraobj []entities.Model_movie
@@ -151,10 +151,10 @@ func Moviehome(c *fiber.Ctx) error {
 			})
 		}
 		helpers.SetRedis(Fieldmovie_home_redis+"_"+strconv.Itoa(client.Movie_page)+"_"+client.Movie_search, result, 10*time.Minute)
-		log.Println("MOVIE MYSQL")
+		fmt.Println("MOVIE MYSQL")
 		return c.JSON(result)
 	} else {
-		log.Println("MOVIE CACHE")
+		fmt.Println("MOVIE CACHE")
 		return c.JSON(fiber.Map{
 			"status":      fiber.StatusOK,
 			"message":     message_RD,
@@ -192,10 +192,10 @@ func Moviehomenotcdn(c *fiber.Ctx) error {
 			})
 		}
 		helpers.SetRedis(Fieldmovienotcdn_home_redis, result, 2*time.Minute)
-		log.Println("MOVIE NOT CDN MYSQL")
+		fmt.Println("MOVIE NOT CDN MYSQL")
 		return c.JSON(result)
 	} else {
-		log.Println("MOVIE NOT CDN")
+		fmt.Println("MOVIE NOT CDN")
 		return c.JSON(fiber.Map{
 			"status":  fiber.StatusOK,
 			"message": message_RD,
@@ -204,7 +204,6 @@ func Moviehomenotcdn(c *fiber.Ctx) error {
 		})
 	}
 }
-
 func Movieminihome(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
 	client := new(entities.Controller_moviemini)
@@ -235,7 +234,7 @@ func Movieminihome(c *fiber.Ctx) error {
 	}
 	if client.Movie_search != "" {
 		val_movie := helpers.DeleteRedis(Fieldmoviemini_home_redis + "_" + client.Movie_search)
-		log.Printf("Redis Delete BACKEND MOVIE MINI : %d", val_movie)
+		fmt.Printf("Redis Delete BACKEND MOVIE MINI : %d", val_movie)
 	}
 	var obj entities.Model_movie
 	var arraobj []entities.Model_movie
@@ -267,10 +266,10 @@ func Movieminihome(c *fiber.Ctx) error {
 			})
 		}
 		helpers.SetRedis(Fieldmovie_home_redis+"_"+client.Movie_search, result, 10*time.Minute)
-		log.Println("MOVIE MINI MYSQL")
+		fmt.Println("MOVIE MINI MYSQL")
 		return c.JSON(result)
 	} else {
-		log.Println("MOVIE MINI CACHE")
+		fmt.Println("MOVIE MINI CACHE")
 		return c.JSON(fiber.Map{
 			"status":      fiber.StatusOK,
 			"message":     message_RD,
@@ -400,10 +399,10 @@ func Movietroublehome(c *fiber.Ctx) error {
 			})
 		}
 		helpers.SetRedis(Fieldmovierouble_home_redis+"_"+strconv.Itoa(client.Movie_page)+"_"+client.Movie_search, result, 10*time.Minute)
-		log.Println("MOVIE TROUBLE MYSQL")
+		fmt.Println("MOVIE TROUBLE MYSQL")
 		return c.JSON(result)
 	} else {
-		log.Println("MOVIE TROUBLE CACHE")
+		fmt.Println("MOVIE TROUBLE CACHE")
 		return c.JSON(fiber.Map{
 			"status":      fiber.StatusOK,
 			"message":     message_RD,
@@ -473,15 +472,21 @@ func Moviesave(c *fiber.Ctx) error {
 			})
 		}
 		val_movie := helpers.DeleteRedis(Fieldmovie_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_")
-		log.Printf("Redis Delete BACKEND MOVIE : %d", val_movie)
+		fmt.Printf("Redis Delete BACKEND MOVIE : %d", val_movie)
 		val_movietrouble := helpers.DeleteRedis(Fieldmovierouble_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_")
-		log.Printf("Redis Delete BACKEND MOVIE TROUBLE : %d", val_movietrouble)
+		fmt.Printf("Redis Delete BACKEND MOVIE TROUBLE : %d", val_movietrouble)
 		val_movieseries := helpers.DeleteRedis(Fieldmovieseries_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_")
-		log.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
+		fmt.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
 		val_movieseriestrouble := helpers.DeleteRedis(Fieldmovieseriestrouble_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_")
-		log.Printf("Redis Delete BACKEND MOVIE SERIES TROUBLE : %d", val_movieseriestrouble)
+		fmt.Printf("Redis Delete BACKEND MOVIE SERIES TROUBLE : %d", val_movieseriestrouble)
 		val_clientmovie := helpers.DeleteRedis(Fieldmovie_client_redis)
-		log.Printf("Redis Delete CLIENT MOVIE : %d", val_clientmovie)
+		fmt.Printf("Redis Delete CLIENT MOVIE : %d", val_clientmovie)
+		val_clientmovie_new := helpers.DeleteRedis(Fieldmovie_client_redis + "_0_NEW_")
+		val_clientmovie_update := helpers.DeleteRedis(Fieldmovie_client_redis + "_0_UPDATE_")
+		val_clientmovie_random := helpers.DeleteRedis(Fieldmovie_client_redis + "_0_RANDOM_")
+		fmt.Printf("Redis Delete CLIENT MOVIE NEW : %d", val_clientmovie_new)
+		fmt.Printf("Redis Delete CLIENT MOVIE UPDATE: %d", val_clientmovie_update)
+		fmt.Printf("Redis Delete CLIENT MOVIE RANDOM: %d", val_clientmovie_random)
 		return c.JSON(result)
 	}
 }
@@ -581,10 +586,10 @@ func Moviehomeseries(c *fiber.Ctx) error {
 			"record":  errors,
 		})
 	}
-	log.Println(client.Movie_page)
+	fmt.Println(client.Movie_page)
 	if client.Movie_search != "" {
 		val_movie := helpers.DeleteRedis(Fieldmovieseries_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_" + client.Movie_search)
-		log.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movie)
+		fmt.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movie)
 	}
 	var obj entities.Model_movieseries
 	var arraobj []entities.Model_movieseries
@@ -674,10 +679,10 @@ func Moviehomeseries(c *fiber.Ctx) error {
 			})
 		}
 		helpers.SetRedis(Fieldmovieseries_home_redis+"_"+strconv.Itoa(client.Movie_page)+"_"+client.Movie_search, result, 10*time.Minute)
-		log.Println("MOVIE SERIES MYSQL")
+		fmt.Println("MOVIE SERIES MYSQL")
 		return c.JSON(result)
 	} else {
-		log.Println("MOVIE SERIES CACHE")
+		fmt.Println("MOVIE SERIES CACHE")
 		return c.JSON(fiber.Map{
 			"status":      fiber.StatusOK,
 			"message":     message_RD,
@@ -716,10 +721,10 @@ func Moviehomeseriestrouble(c *fiber.Ctx) error {
 			"record":  errors,
 		})
 	}
-	log.Println(client.Movie_page)
+	fmt.Println(client.Movie_page)
 	if client.Movie_search != "" {
 		val_movie := helpers.DeleteRedis(Fieldmovieseriestrouble_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_" + client.Movie_search)
-		log.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movie)
+		fmt.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movie)
 	}
 	var obj entities.Model_movieseries
 	var arraobj []entities.Model_movieseries
@@ -809,10 +814,10 @@ func Moviehomeseriestrouble(c *fiber.Ctx) error {
 			})
 		}
 		helpers.SetRedis(Fieldmovieseriestrouble_home_redis+"_"+strconv.Itoa(client.Movie_page)+"_"+client.Movie_search, result, 10*time.Minute)
-		log.Println("MOVIE SERIES TROUBLE MYSQL")
+		fmt.Println("MOVIE SERIES TROUBLE MYSQL")
 		return c.JSON(result)
 	} else {
-		log.Println("MOVIE SERIES TROUBLE CACHE")
+		fmt.Println("MOVIE SERIES TROUBLE CACHE")
 		return c.JSON(fiber.Map{
 			"status":      fiber.StatusOK,
 			"message":     message_RD,
@@ -883,15 +888,15 @@ func Movieseriessave(c *fiber.Ctx) error {
 		}
 
 		val_movie := helpers.DeleteRedis(Fieldmovie_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_")
-		log.Printf("Redis Delete BACKEND MOVIE : %d", val_movie)
+		fmt.Printf("Redis Delete BACKEND MOVIE : %d", val_movie)
 		val_movietrouble := helpers.DeleteRedis(Fieldmovierouble_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_")
-		log.Printf("Redis Delete BACKEND MOVIE TROUBLE : %d", val_movietrouble)
+		fmt.Printf("Redis Delete BACKEND MOVIE TROUBLE : %d", val_movietrouble)
 		val_movieseries := helpers.DeleteRedis(Fieldmovieseries_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_")
-		log.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
+		fmt.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
 		val_movieseriestrouble := helpers.DeleteRedis(Fieldmovieseriestrouble_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_")
-		log.Printf("Redis Delete BACKEND MOVIE SERIES TROUBLE : %d", val_movieseriestrouble)
+		fmt.Printf("Redis Delete BACKEND MOVIE SERIES TROUBLE : %d", val_movieseriestrouble)
 		val_clientmovie := helpers.DeleteRedis(Fieldmovie_client_redis)
-		log.Printf("Redis Delete CLIENT MOVIE : %d", val_clientmovie)
+		fmt.Printf("Redis Delete CLIENT MOVIE : %d", val_clientmovie)
 		return c.JSON(result)
 	}
 }
@@ -954,10 +959,10 @@ func Seasonhome(c *fiber.Ctx) error {
 			})
 		}
 		helpers.SetRedis(Fieldmovieseriesseason_home_redis+"_"+strconv.Itoa(client.Movie_id), result, 5*time.Minute)
-		log.Println("SEASON MYSQL")
+		fmt.Println("SEASON MYSQL")
 		return c.JSON(result)
 	} else {
-		log.Println("SEASON CACHE")
+		fmt.Println("SEASON CACHE")
 		return c.JSON(fiber.Map{
 			"status":  fiber.StatusOK,
 			"message": message_RD,
@@ -1023,9 +1028,9 @@ func Seasonsave(c *fiber.Ctx) error {
 			})
 		}
 		val_season := helpers.DeleteRedis(Fieldmovieseriesseason_home_redis + "_" + strconv.Itoa(client.Movie_id))
-		log.Printf("Redis Delete BACKEND MOVIE SEASON : %d", val_season)
+		fmt.Printf("Redis Delete BACKEND MOVIE SEASON : %d", val_season)
 		val_movieseries := helpers.DeleteRedis(Fieldmovieseries_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_")
-		log.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
+		fmt.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
 		return c.JSON(result)
 	}
 }
@@ -1074,7 +1079,6 @@ func Seasondelete(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	} else {
-
 		result, err := models.Delete_season(client_admin, client.Movieseason_id, client.Movie_id)
 		if err != nil {
 			c.Status(fiber.StatusBadRequest)
@@ -1085,9 +1089,9 @@ func Seasondelete(c *fiber.Ctx) error {
 			})
 		}
 		val_season := helpers.DeleteRedis(Fieldmovieseriesseason_home_redis + "_" + strconv.Itoa(client.Movie_id))
-		log.Printf("Redis Delete BACKEND MOVIE SEASON : %d", val_season)
+		fmt.Printf("Redis Delete BACKEND MOVIE SEASON : %d", val_season)
 		val_movieseries := helpers.DeleteRedis(Fieldmovieseries_home_redis + "_1_")
-		log.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
+		fmt.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
 		return c.JSON(result)
 	}
 }
@@ -1164,10 +1168,10 @@ func Episodehome(c *fiber.Ctx) error {
 			})
 		}
 		helpers.SetRedis(Fieldmovieseriesepisode_home_redis+"_"+strconv.Itoa(client.Season_id), result, 5*time.Minute)
-		log.Println("EPISODE MYSQL")
+		fmt.Println("EPISODE MYSQL")
 		return c.JSON(result)
 	} else {
-		log.Println("EPISODE CACHE")
+		fmt.Println("EPISODE CACHE")
 		return c.JSON(fiber.Map{
 			"status":  fiber.StatusOK,
 			"message": message_RD,
@@ -1235,11 +1239,11 @@ func Episodesave(c *fiber.Ctx) error {
 			})
 		}
 		val_episode := helpers.DeleteRedis(Fieldmovieseriesepisode_home_redis + "_" + strconv.Itoa(client.Movieseason_id))
-		log.Printf("Redis Delete BACKEND MOVIE EPISODE : %d", val_episode)
+		fmt.Printf("Redis Delete BACKEND MOVIE EPISODE : %d", val_episode)
 		val_season := helpers.DeleteRedis(Fieldmovieseriesseason_home_redis + "_" + strconv.Itoa(client.Movie_id))
-		log.Printf("Redis Delete BACKEND MOVIE SEASON : %d", val_season)
+		fmt.Printf("Redis Delete BACKEND MOVIE SEASON : %d", val_season)
 		val_movieseries := helpers.DeleteRedis(Fieldmovieseries_home_redis + "_" + strconv.Itoa(client.Movie_page) + "_")
-		log.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
+		fmt.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
 		return c.JSON(result)
 	}
 }
@@ -1299,11 +1303,11 @@ func Episodedelete(c *fiber.Ctx) error {
 			})
 		}
 		val_episode := helpers.DeleteRedis(Fieldmovieseriesepisode_home_redis + "_" + strconv.Itoa(client.Season_id))
-		log.Printf("Redis Delete BACKEND MOVIE EPISODE : %d", val_episode)
+		fmt.Printf("Redis Delete BACKEND MOVIE EPISODE : %d", val_episode)
 		val_season := helpers.DeleteRedis(Fieldmovieseriesseason_home_redis + "_" + strconv.Itoa(client.Movie_id))
-		log.Printf("Redis Delete BACKEND MOVIE SEASON : %d", val_season)
+		fmt.Printf("Redis Delete BACKEND MOVIE SEASON : %d", val_season)
 		val_movieseries := helpers.DeleteRedis(Fieldmovieseries_home_redis + "_1_")
-		log.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
+		fmt.Printf("Redis Delete BACKEND MOVIE SERIES : %d", val_movieseries)
 		return c.JSON(result)
 	}
 }
@@ -1340,10 +1344,10 @@ func Genrehome(c *fiber.Ctx) error {
 			})
 		}
 		helpers.SetRedis(Fieldgenre_home_redis, result, 0)
-		log.Println("GENRE MYSQL")
+		fmt.Println("GENRE MYSQL")
 		return c.JSON(result)
 	} else {
-		log.Println("GENRE CACHE")
+		fmt.Println("GENRE CACHE")
 		return c.JSON(fiber.Map{
 			"status":  fiber.StatusOK,
 			"message": message_RD,
@@ -1410,7 +1414,7 @@ func Genresave(c *fiber.Ctx) error {
 			})
 		}
 		val_genre := helpers.DeleteRedis(Fieldgenre_home_redis)
-		log.Printf("Redis Delete BACKEND MOVIE GENRE : %d", val_genre)
+		fmt.Printf("Redis Delete BACKEND MOVIE GENRE : %d", val_genre)
 		return c.JSON(result)
 	}
 }
@@ -1447,7 +1451,7 @@ func Genredelete(c *fiber.Ctx) error {
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
 	client_admin, idruleadmin := helpers.Parsing_Decry(temp_decp, "==")
-	log.Println("RULE :" + client.Page)
+	fmt.Println("RULE :" + client.Page)
 	ruleadmin := models.Get_AdminRule("ruleadmingroup", idruleadmin)
 	flag := models.Get_listitemsearch(ruleadmin, ",", client.Page)
 
@@ -1470,7 +1474,7 @@ func Genredelete(c *fiber.Ctx) error {
 			})
 		}
 		val_genre := helpers.DeleteRedis(Fieldgenre_home_redis)
-		log.Printf("Redis Delete BACKEND MOVIE GENRE : %d", val_genre)
+		fmt.Printf("Redis Delete BACKEND MOVIE GENRE : %d", val_genre)
 		return c.JSON(result)
 	}
 }
@@ -1493,21 +1497,21 @@ func Movieuploadcloud(c *fiber.Ctx) error {
 
 	file, err := c.FormFile("file")
 	if err != nil {
-		log.Println("image upload error --> ", err)
+		fmt.Println("image upload error --> ", err)
 		return c.JSON(fiber.Map{"status": 500, "message": "Server error", "data": nil})
 
 	}
-	log.Println("File : ", file.Filename)
+	fmt.Println("File : ", file.Filename)
 	uniqueId := uuid.New()
 	filename := strings.Replace(uniqueId.String(), "-", "", -1)
 	fileExt := strings.Split(file.Filename, ".")[1]
 	image := fmt.Sprintf("%s.%s", filename, fileExt)
-	log.Println(image)
+	fmt.Println(image)
 	// path_imagelocal := `F:\ISBPROJECT\ISBPANEL\isbpanel_backend\frontend\public\images\` + image
 	path_imageserver := dir + dir_img
 	err = c.SaveFile(file, fmt.Sprintf(`%s/%s`, path_imageserver, image))
 	if err != nil {
-		log.Println("image save error --> ", err)
+		fmt.Println("image save error --> ", err)
 		return c.JSON(fiber.Map{"status": 500, "message": "Server error", "data": nil})
 	}
 
@@ -1529,7 +1533,7 @@ func Movieuploadcloud(c *fiber.Ctx) error {
 		SetContentLength(true).
 		Post("https://api.cloudflare.com/client/v4/accounts/dc5ba4b3b061907a5e1f8cdf1ae1ec96/images/v1")
 	if err != nil {
-		log.Println(err.Error())
+		fmt.Println(err.Error())
 	}
 	result := resp.Result().(*responseuploadcloudflare)
 	return c.JSON(fiber.Map{
@@ -1574,7 +1578,7 @@ func Movieupdatecloud(c *fiber.Ctx) error {
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
 	client_admin, idruleadmin := helpers.Parsing_Decry(temp_decp, "==")
-	log.Println("RULE :" + client.Page)
+	fmt.Println("RULE :" + client.Page)
 	ruleadmin := models.Get_AdminRule("ruleadmingroup", idruleadmin)
 	flag := models.Get_listitemsearch(ruleadmin, ",", client.Page)
 
@@ -1604,10 +1608,10 @@ func Movieupdatecloud(c *fiber.Ctx) error {
 
 		if client.Album_id > 0 {
 			flag_album := models.Update_album(client_admin, client.Movie_tipe, client.Album_id)
-			log.Printf("Update Album : %t", flag_album)
+			fmt.Printf("Update Album : %t", flag_album)
 		}
 		val_album := helpers.DeleteRedis(Fieldalbum_home_redis)
-		log.Printf("Redis Delete BACKEND ALBUM : %d", val_album)
+		fmt.Printf("Redis Delete BACKEND ALBUM : %d", val_album)
 		return c.JSON(fiber.Map{
 			"status": result.Status,
 			"record": result.Record,
